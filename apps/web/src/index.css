@@ -1,0 +1,297 @@
+html, body {
+  background-image: url('https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/d74c88f62959dfdf70096fe612e9435b.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+#root, .app, main {
+  background: transparent !important;
+}
+
+* {
+  background-color: transparent !important;
+}
+
+.product-detail, .product-card, button, input, select, textarea {
+  background-color: inherit !important;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 180 100% 50%;
+    --radius: 0.75rem;
+    
+    --section-overlay-opacity: 0.3;
+    --section-bg-position: center;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 180 100% 50%;
+    
+    --section-overlay-opacity: 0.3;
+  }
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  font-family: "Geist", sans-serif;
+  color: hsl(var(--foreground));
+  overflow-x: clip;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Space Mono", monospace;
+  text-balance: balance;
+}
+
+@layer components {
+  .product-detail {
+    background: transparent !important;
+    box-shadow: none !important;
+    margin: 2rem auto;
+    max-width: 1200px;
+  }
+
+  .product-detail h1,
+  .product-detail h2,
+  .product-detail h3,
+  .product-detail p,
+  .product-detail label,
+  .product-detail span {
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.7);
+  }
+
+  .product-detail input,
+  .product-detail select,
+  .product-detail textarea {
+    background-color: rgba(31, 41, 55, 0.85) !important;
+    color: #ffffff !important;
+    text-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .product-detail button {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  .image-drop-zone {
+    position: relative;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 0.5rem;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .image-drop-zone:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .image-drop-zone.active {
+    border: 2px dashed #00ff88;
+    background-color: rgba(0, 255, 136, 0.1);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+  }
+
+  .image-drop-zone img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 0.375rem;
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  .bg-treewater-parallax {
+    background-position: var(--section-bg-position);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+  }
+
+  @media (min-width: 768px) {
+    .bg-treewater-parallax {
+      background-attachment: fixed;
+    }
+  }
+
+  .overlay-treewater {
+    background-color: rgba(0, 0, 0, var(--section-overlay-opacity));
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .modal-backdrop-blur {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.8);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slideInDown {
+  animation: slideInDown 0.6s ease-out;
+}
+
+.animate-glowPulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--primary) / 0.1),
+    transparent
+  );
+  background-size: 1000px 100%;
+}
+
+.neon-text {
+  text-shadow: 0 0 10px hsl(var(--primary) / 0.8),
+               0 0 20px hsl(var(--primary) / 0.6),
+               0 0 30px hsl(var(--primary) / 0.4);
+}
+
+.neon-text-subtle {
+  text-shadow: 0 0 8px hsl(var(--primary) / 0.4),
+               0 0 12px hsl(var(--primary) / 0.2);
+}
+
+.neon-border {
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.5),
+              inset 0 0 10px hsl(var(--primary) / 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Product Detail Page Specific Styles */
+.gallery-thumbnail {
+  transition: all 0.2s ease-in-out;
+}
+.gallery-thumbnail:hover {
+  transform: translateY(-2px);
+}
+.variant-btn {
+  transition: all 0.2s ease-in-out;
+}
+.variant-btn:active {
+  transform: scale(0.95);
+}

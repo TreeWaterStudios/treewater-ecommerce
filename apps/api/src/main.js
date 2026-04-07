@@ -72,7 +72,7 @@ app.use((req, res) => {
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-	logger.info(`Server running on port ${PORT}`);
+	logger.info(`Server running on port ${port}`);
 });
 
 export default app;

@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { authenticatePocketBase } from './utils/pocketbaseAuth.js';
 
 import routes from './routes/index.js';
 import { errorMiddleware } from './middleware/index.js';
@@ -43,10 +44,14 @@ app.use(helmet());
 
 // CORS configuration - MUST come before routes
 app.use(cors({
-	origin: true,
+	origin: [
+		'https://horizons.hostinger.com',
+		'https://treewaterstudios.com',
+		'http://treewaterstudios.com',
+	],
 	credentials: true,
-	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization']
+	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
+	allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(morgan('combined'));
@@ -65,14 +70,34 @@ app.use(multerErrorHandler);
 
 app.use(errorMiddleware);
 
+app.get('/', (req, res) => {
+	res.status(200).json({ ok: true, service: 'treewater-api' });
+});
+
+app.head('/', (req, res) => {
+	res.sendStatus(200);
+});
+
 app.use((req, res) => {
 	res.status(404).json({ error: 'Route not found' });
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
-app.listen(port, () => {
-	logger.info(`Server running on port ${port}`);
-});
+const startServer = async () => {
+	try {
+		await authenticatePocketBase();
+
+		app.listen(port, () => {
+			logger.info(`Server running on port ${port}`);
+		});
+
+	} catch (error) {
+		logger.error('Failed to start server:', error);
+		process.exit(1);
+	}
+};
+
+startServer();
 
 export default app;

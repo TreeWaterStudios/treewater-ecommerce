@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import PocketBase from 'pocketbase';
+import { getPocketBaseClient } from '../utils/pocketbaseAuth.js';
 import logger from '../utils/logger.js';
 
 const router = express.Router();
@@ -12,8 +12,6 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
-const pb = new PocketBase(process.env.POCKETBASE_URL);
 
 const storage = multer.memoryStorage();
 
@@ -38,7 +36,7 @@ const upload = multer({
 router.get('/products/:productId/mockups', async (req, res) => {
   try {
     const { productId } = req.params;
-
+    const pb = getPocketBaseClient();
     const mockups = await pb.collection('mockups').getFullList({
       filter: `productId = "${productId}"`,
       sort: 'displayOrder',
@@ -62,6 +60,7 @@ router.post('/products/:productId/mockups', upload.single('file'), async (req, r
   try {
     const { productId } = req.params;
     const { label } = req.body;
+    const pb = getPocketBaseClient();
 
     if (!req.file) {
       return res.status(400).json({ error: 'No file provided' });

@@ -73,7 +73,7 @@ router.get('/products/:productId/mockups', async (req, res) => {
   // Format response
   const formattedMockups = mockups.map((mockup) => ({
     id: mockup.id,
-    imageUrl: mockup.image,
+    imageUrl: mockup.imageUrl || '',
     label: mockup.label || null,
     displayOrder: mockup.displayOrder,
   }));
@@ -159,9 +159,9 @@ router.post('/products/:productId/mockups', upload.single('file'), async (req, r
 
   const mockupRecord = await pb.collection('mockups').create({
   productId,
-  label,
-  displayOrder,
-  imageUrl: result.secure_url   // ✅ FIX
+  imageUrl: uploadResult.secure_url,
+  label: label || `View ${newDisplayOrder}`,
+  displayOrder: newDisplayOrder,
 });
 
   logger.info(`[MOCKUP UPLOAD] ✅ Mockup record created: ${mockupRecord.id}`);
@@ -169,7 +169,7 @@ router.post('/products/:productId/mockups', upload.single('file'), async (req, r
   // Format response
   const response = {
     id: mockupRecord.id,
-    imageUrl: mockupRecord.image,
+    imageUrl: mockupRecord.imageUrl || '',
     label: mockupRecord.label || null,
     displayOrder: mockupRecord.displayOrder,
   };

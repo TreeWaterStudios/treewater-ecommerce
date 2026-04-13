@@ -113,7 +113,7 @@ export default function ProductDetailPage() {
       await uploadMockups(product.id, imageFiles, labels);
 
       const mockups = await getMockupsForProduct(product.id);
-      const urls = mockups.map((m) => m.imageUrl).filter(Boolean);
+      const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
       setImages(urls);
       setMainImage(urls[0] || null);
@@ -246,7 +246,7 @@ export default function ProductDetailPage() {
       await uploadMockups(product.id, imageFiles, labels);
 
       const mockups = await getMockupsForProduct(product.id);
-      const urls = mockups.map((m) => m.imageUrl).filter(Boolean);
+      const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
       setImages(urls);
       setMainImage(urls[0] || null);

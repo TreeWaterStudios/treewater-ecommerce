@@ -158,11 +158,11 @@ router.post('/products/:productId/mockups', upload.single('file'), async (req, r
   logger.info(`[MOCKUP UPLOAD] Creating mockup record in PocketBase`);
 
   const mockupRecord = await pb.collection('mockups').create({
-    productId,
-    image: uploadResult.secure_url,
-    label: label || `View ${newDisplayOrder}`,
-    displayOrder: newDisplayOrder,
-  });
+  productId,
+  label,
+  displayOrder,
+  imageUrl: result.secure_url   // ✅ FIX
+});
 
   logger.info(`[MOCKUP UPLOAD] ✅ Mockup record created: ${mockupRecord.id}`);
 

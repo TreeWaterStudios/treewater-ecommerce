@@ -43,16 +43,40 @@ process.on('SIGTERM', async () => {
 app.use(helmet());
 
 // CORS configuration - MUST come before routes
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://treewaterstudios.com',
+  'https://www.treewaterstudios.com',
+];
+
+const allowedOriginPatterns = [
+  /^https:\/\/[a-z0-9-]+\.app-preview\.com$/,
+  /^https:\/\/horizons\.hostinger\.com$/,
+];
+
 app.use(cors({
-	origin: [
-		'https://horizons.hostinger.com',
-		'https://treewaterstudios.com',
-		'http://treewaterstudios.com',
-	],
-	credentials: true,
-	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
-	allowedHeaders: ['Content-Type', 'Authorization'],
+  origin(origin, callback) {
+    if (!origin) return callback(null, true);
+
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      allowedOriginPatterns.some((pattern) => pattern.test(origin));
+
+    if (isAllowed) {
+      return callback(null, true);
+    }
+
+    logger.warn(`[CORS] Blocked origin: ${origin}`);
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false,
+  optionsSuccessStatus: 204,
 }));
+
+app.options('*', cors());
 
 app.use(morgan('combined'));
 app.use(express.json());

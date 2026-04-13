@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useParams, useLocation, Link } from 'react-router-dom';
@@ -11,7 +10,7 @@ import { toast } from 'sonner';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
 import { getProduct } from '@/api/EcommerceApi.js';
-import uploadImage from '../api/imageUpload.js';
+import { getMockupsForProduct, uploadMockups } from '@/api/mockupApi.js';
 
 const fallbackImages = [
   '/images/treewater-hoodie-front.jpg',
@@ -39,30 +38,36 @@ export default function ProductDetailPage() {
   const [mainImage, setMainImage] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
-  const storageKey = product?.id ? `productImages_${product.id}` : null;
-
   useEffect(() => {
-    console.log('🚀 [ProductDetailPage] Mount - Extracted productId:', productId);
-  }, [productId]);
+    if (!product?.id) return;
 
-  // Load saved images from localStorage on mount
-  useEffect(() => {
-    if (storageKey) {
+    const loadMockups = async () => {
       try {
-        const savedImages = localStorage.getItem(storageKey);
-        if (savedImages) {
-          const parsedImages = JSON.parse(savedImages);
-          console.log('[IMAGES] 💾 Loaded saved images from localStorage:', parsedImages);
-          if (Array.isArray(parsedImages) && parsedImages.length > 0) {
-            setImages(parsedImages);
-            setMainImage(parsedImages[0]);
-          }
+        const mockups = await getMockupsForProduct(product.id);
+        console.log('[MOCKUPS RAW]', mockups);
+        const urls = mockups.map((m) => {
+          console.log('[MOCKUP ITEM]', m);
+          return m.imageUrl || m.image; // fallback
+        }).filter(Boolean);
+
+        console.log('[MOCKUP URLS]', urls);
+
+        if (urls.length > 0) {
+          setImages(urls);
+          setMainImage(urls[0]);
+        } else {
+          setImages([]);
+          setMainImage(null);
         }
       } catch (error) {
-        console.error('[IMAGES] ❌ Error loading images from localStorage:', error);
+        console.error('[MOCKUPS] Failed to load mockups:', error);
+        setImages([]);
+        setMainImage(null);
       }
-    }
-  }, [storageKey]);
+    };
+
+    loadMockups();
+  }, [product?.id]);
 
   // Fetch product if not available in location state
   useEffect(() => {
@@ -91,6 +96,36 @@ export default function ProductDetailPage() {
         });
     }
   }, [productId, product]);
+
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !product?.id) return;
+
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+
+    if (!imageFiles.length) {
+      toast.error('Invalid file type');
+      return;
+    }
+
+    try {
+      const labels = imageFiles.map((_, i) => `View ${images.length + i + 1}`);
+      await uploadMockups(product.id, imageFiles, labels);
+
+      const mockups = await getMockupsForProduct(product.id);
+      const urls = mockups.map((m) => m.imageUrl).filter(Boolean);
+
+      setImages(urls);
+      setMainImage(urls[0] || null);
+
+      toast.success('Image uploaded successfully');
+    } catch (err) {
+      console.error('UPLOAD FAILED:', err);
+      toast.error('Upload failed', { description: err.message || 'Could not upload image.' });
+    }
+
+    e.target.value = '';
+  };
 
   const { availableColors, availableSizes } = useMemo(() => {
     if (!product || !product.variants) return { availableColors: [], availableSizes: [] };
@@ -186,61 +221,42 @@ export default function ProductDetailPage() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    console.log('🔥 [DROP] Triggered');
+
+    if (!product?.id) return;
 
     let files = [];
 
     if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
       files = Array.from(e.dataTransfer.items)
-        .map((item) => (item.kind === "file" ? item.getAsFile() : null))
+        .map((item) => (item.kind === 'file' ? item.getAsFile() : null))
         .filter(Boolean);
     } else {
       files = Array.from(e.dataTransfer.files);
     }
 
-    console.log('📁 [DROP] Files:', files);
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
-    if (!files.length) {
-      console.log('[DROP] ⚠️ No files found in drop event');
+    if (!imageFiles.length) {
+      toast.error('No valid image files found');
       return;
     }
 
-    for (const file of files) {
-      console.log('🔍 [DROP] Validating:', file.name);
-      const isImageFile = file.type.startsWith('image/');
-      
-      if (!isImageFile) {
-        console.warn('[DROP] ⚠️ Invalid image file skipped:', file.name);
-        toast.error('Invalid file type', { description: `${file.name} is not a valid image.` });
-        continue;
-      }
+    try {
+      const labels = imageFiles.map((_, i) => `View ${images.length + i + 1}`);
+      await uploadMockups(product.id, imageFiles, labels);
 
-      try {
-        console.log('📤 [DROP] Uploading:', file.name);
-        const imageUrl = await uploadImage(file);
-        console.log('FINAL IMAGE URL:', imageUrl);
+      const mockups = await getMockupsForProduct(product.id);
+      const urls = mockups.map((m) => m.imageUrl).filter(Boolean);
 
-        setImages((prev) => {
-          let updated = [...prev, imageUrl];
-          if (updated.length > MAX_IMAGES) {
-            updated = updated.slice(updated.length - MAX_IMAGES);
-          }
-          console.log('UPDATED IMAGES:', updated);
-          if (storageKey) {
-            localStorage.setItem(storageKey, JSON.stringify(updated));
-          }
-          return updated;
-        });
-        
-        setMainImage(imageUrl);
-        toast.success('Image uploaded successfully');
-      } catch (err) {
-        console.error('UPLOAD FAILED:', err);
-        toast.error('Upload failed', { description: err.message || 'Could not upload image.' });
-      }
+      setImages(urls);
+      setMainImage(urls[0] || null);
+
+      toast.success('Image uploaded successfully');
+    } catch (err) {
+      console.error('UPLOAD FAILED:', err);
+      toast.error('Upload failed', { description: err.message || 'Could not upload image.' });
     }
 
-    console.log('✅ [DROP] Complete');
     if (e.dataTransfer.items) {
       e.dataTransfer.items.clear();
     }
@@ -317,6 +333,15 @@ export default function ProductDetailPage() {
         <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
           {/* Image Gallery */}
           <div className="flex flex-col gap-4">
+            <input
+              id="product-image-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+
             <motion.div 
               initial={{ opacity: 0, x: -20 }} 
               animate={{ opacity: 1, x: 0 }} 
@@ -363,6 +388,16 @@ export default function ProductDetailPage() {
                 )}
               </AnimatePresence>
             </motion.div>
+
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                onClick={() => document.getElementById('product-image-upload')?.click()}
+                className="rounded-xl"
+              >
+                Upload Images
+              </Button>
+            </div>
             
             {images && images.length > 0 ? (
               <div className="flex flex-col gap-3">

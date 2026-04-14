@@ -96,9 +96,10 @@ function getProductBasePrice(product, normalizedVariants, fallbackProduct = null
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId || params.id;
-  const stateProduct = location.state?.product || null; 
 
   const location = useLocation();
+  const stateProduct = location.state?.product || null;
+
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState(stateProduct);

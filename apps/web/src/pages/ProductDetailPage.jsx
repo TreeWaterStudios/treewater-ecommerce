@@ -74,12 +74,16 @@ function normalizeVariants(product) {
   });
 }
 
-function getProductBasePrice(product, normalizedVariants) {
+function getProductBasePrice(product, normalizedVariants, fallbackProduct = null) {
   const directPrice = Number(
     product?.price ??
     product?.retail_price ??
     product?.priceRetail ??
     product?.retailPrice ??
+    fallbackProduct?.price ??
+    fallbackProduct?.retail_price ??
+    fallbackProduct?.priceRetail ??
+    fallbackProduct?.retailPrice ??
     0
   );
 
@@ -92,11 +96,12 @@ function getProductBasePrice(product, normalizedVariants) {
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId || params.id;
-  
+  const stateProduct = location.state?.product || null; 
+
   const location = useLocation();
   const { addToCart } = useCart();
 
-  const [product, setProduct] = useState(location.state?.product || null);
+  const [product, setProduct] = useState(stateProduct);
   const [loading, setLoading] = useState(!location.state?.product);
   const [notFound, setNotFound] = useState(false);
 
@@ -149,7 +154,10 @@ export default function ProductDetailPage() {
       getProduct(productId)
         .then((data) => {
           if (data) {
-            setProduct(data);
+            setProduct((prev) => ({
+              ...(prev || {}),
+              ...(data || {})
+            }));
           } else {
             console.warn(`❌ [ProductDetailPage] 404 - Product not found for ID: ${productId}.`);
             setNotFound(true);
@@ -272,7 +280,7 @@ export default function ProductDetailPage() {
     const finalPrice =
       Number(selectedVariant?.price || 0) > 0
         ? Number(selectedVariant.price)
-        : getProductBasePrice(product, normalizedVariants);
+        : getProductBasePrice(product, normalizedVariants, stateProduct);
 
     const cartItem = {
       id: `${product.id}-${selectedVariant.variant_id}`,
@@ -415,15 +423,15 @@ export default function ProductDetailPage() {
   const displayPrice =
     Number(selectedVariant?.price || 0) > 0
       ? Number(selectedVariant.price)
-      : getProductBasePrice(product, normalizedVariants);
+      : getProductBasePrice(product, normalizedVariants, stateProduct);
 
   console.log('[PRODUCT DETAIL]', product);
   console.log('[NORMALIZED VARIANTS]', normalizedVariants);
   console.log('[AVAILABLE SIZES]', availableSizes);
   console.log('[SELECTED VARIANT]', selectedVariant);
   console.log('[DISPLAY PRICE]', displayPrice);
-  return (
 
+  return (
     <div className="product-detail p-8 max-w-6xl mx-auto flex flex-col min-h-screen bg-[#0a0a0a]">
       <Helmet>
         <title>{`${product.name} - TREEWATER STUDIOS`}</title>

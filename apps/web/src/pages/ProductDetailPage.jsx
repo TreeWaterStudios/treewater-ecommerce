@@ -18,6 +18,76 @@ const fallbackImages = [
 ];
 
 const MAX_IMAGES = 3;
+const SIZE_ORDER = ['2XS', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
+
+function extractSize(value = '') {
+  const match = String(value).toUpperCase().match(/\b(2XS|XS|S|M|L|XL|2XL|3XL|4XL|5XL)\b/);
+  return match ? match[1] : '';
+}
+
+function normalizeVariants(product) {
+  const rawVariants =
+    product?.variants ||
+    product?.sync_variants ||
+    product?.data?.variants ||
+    product?.data?.sync_variants ||
+    [];
+
+  if (!Array.isArray(rawVariants)) return [];
+
+  return rawVariants.map((variant, index) => {
+    const name = variant?.name || variant?.title || '';
+    const color =
+      variant?.color ||
+      variant?.color_name ||
+      variant?.options?.color ||
+      variant?.values?.color ||
+      '';
+
+    const size =
+      variant?.size ||
+      variant?.options?.size ||
+      variant?.values?.size ||
+      extractSize(name);
+
+    const price =
+      Number(
+        variant?.retail_price ??
+        variant?.price ??
+        variant?.priceRetail ??
+        variant?.retailPrice ??
+        0
+      ) || 0;
+
+    return {
+      ...variant,
+      variant_id:
+        variant?.variant_id ||
+        variant?.id ||
+        variant?.sync_variant_id ||
+        `variant-${index}`,
+      color: String(color || '').trim(),
+      size: String(size || '').toUpperCase().trim(),
+      price,
+      in_stock: variant?.in_stock
+    };
+  });
+}
+
+function getProductBasePrice(product, normalizedVariants) {
+  const directPrice = Number(
+    product?.price ??
+    product?.retail_price ??
+    product?.priceRetail ??
+    product?.retailPrice ??
+    0
+  );
+
+  if (directPrice > 0) return directPrice;
+
+  const firstVariantPrice = normalizedVariants.find(v => Number(v.price) > 0)?.price;
+  return Number(firstVariantPrice || 0);
+}
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -127,41 +197,63 @@ export default function ProductDetailPage() {
     e.target.value = '';
   };
 
+  const normalizedVariants = useMemo(() => normalizeVariants(product), [product]);
+
   const { availableColors, availableSizes } = useMemo(() => {
-    if (!product || !product.variants) return { availableColors: [], availableSizes: [] };
-    
-    const colors = [...new Set(product.variants.map(v => v.color).filter(Boolean))];
-    const sizes = [...new Set(product.variants.map(v => v.size).filter(Boolean))];
-    
+    if (!normalizedVariants.length) {
+      return { availableColors: [], availableSizes: [] };
+    }
+
+    const colors = [...new Set(normalizedVariants.map(v => v.color).filter(Boolean))];
+
+    const sizes = [...new Set(normalizedVariants.map(v => v.size).filter(Boolean))]
+      .sort((a, b) => {
+        const aIndex = SIZE_ORDER.indexOf(a);
+        const bIndex = SIZE_ORDER.indexOf(b);
+        if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+        if (aIndex === -1) return 1;
+        if (bIndex === -1) return -1;
+        return aIndex - bIndex;
+      });
+
     return { availableColors: colors, availableSizes: sizes };
-  }, [product]);
+  }, [normalizedVariants]);
 
   useEffect(() => {
-    if (availableColors.length === 1 && !selectedColor) {
+    if (!selectedColor && availableColors.length === 1) {
       setSelectedColor(availableColors[0]);
     }
-    if (availableSizes.length === 1 && !selectedSize) {
+
+    if (!selectedSize && availableSizes.length > 0) {
       setSelectedSize(availableSizes[0]);
     }
   }, [availableColors, availableSizes, selectedColor, selectedSize]);
 
   const findVariant = (color, size) => {
-    if (!product || !product.variants) return null;
-    return product.variants.find(v => 
-      (color ? v.color === color : true) && 
-      (size ? v.size === size : true)
+    if (!normalizedVariants.length) return null;
+
+    return (
+      normalizedVariants.find(v =>
+        (color ? v.color === color : true) &&
+        (size ? v.size === size : true)
+      ) ||
+      normalizedVariants.find(v => (size ? v.size === size : true)) ||
+      normalizedVariants[0] ||
+      null
     );
   };
 
-  const selectedVariant = findVariant(selectedColor, selectedSize);
-  
+  const selectedVariant = useMemo(() => {
+    return findVariant(selectedColor, selectedSize);
+  }, [selectedColor, selectedSize, normalizedVariants]);
+
   const isSelectionComplete = useMemo(() => {
     const needsColor = availableColors.length > 0;
     const needsSize = availableSizes.length > 0;
-    
+
     if (needsColor && !selectedColor) return false;
     if (needsSize && !selectedSize) return false;
-    
+
     return !!selectedVariant;
   }, [availableColors, availableSizes, selectedColor, selectedSize, selectedVariant]);
 
@@ -177,25 +269,31 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product || !selectedVariant) return;
 
+    const finalPrice =
+      Number(selectedVariant?.price || 0) > 0
+        ? Number(selectedVariant.price)
+        : getProductBasePrice(product, normalizedVariants);
+
     const cartItem = {
       id: `${product.id}-${selectedVariant.variant_id}`,
       productId: product.id,
       variantId: selectedVariant.variant_id,
       name: product.name,
-      price: selectedVariant.price || product.price,
-      quantity: quantity,
+      price: finalPrice,
+      quantity,
       image: mainImage || images[0] || fallbackImages[0],
       selectedOptions: {
-        color: selectedColor,
-        size: selectedSize
+        color: selectedVariant.color || selectedColor || '',
+        size: selectedVariant.size || selectedSize || ''
       }
     };
 
     addToCart(cartItem);
+
     toast.success('Added to cart', {
-      description: `${quantity}x ${product.name} (${selectedSize || ''} ${selectedColor || ''})`
+      description: `${quantity}x ${product.name} (${selectedVariant.size || ''} ${selectedVariant.color || ''})`
     });
-    
+
     setQuantity(1);
   };
 
@@ -262,6 +360,11 @@ export default function ProductDetailPage() {
     }
   };
 
+  console.log('[PRODUCT DETAIL]', product);
+  console.log('[NORMALIZED VARIANTS]', normalizedVariants);
+  console.log('[AVAILABLE SIZES]', availableSizes);
+  console.log('[SELECTED VARIANT]', selectedVariant);
+  console.log('[DISPLAY PRICE]', displayPrice);
   if (notFound) {
     return (
       <div className="product-detail p-8 max-w-6xl mx-auto flex flex-col min-h-screen bg-[#0a0a0a]">
@@ -314,7 +417,10 @@ export default function ProductDetailPage() {
     );
   }
 
-  const displayPrice = selectedVariant?.price || product.price || 0;
+  const displayPrice =
+    Number(selectedVariant?.price || 0) > 0
+      ? Number(selectedVariant.price)
+      : getProductBasePrice(product, normalizedVariants);
 
   return (
     <div className="product-detail p-8 max-w-6xl mx-auto flex flex-col min-h-screen bg-[#0a0a0a]">

@@ -360,11 +360,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  console.log('[PRODUCT DETAIL]', product);
-  console.log('[NORMALIZED VARIANTS]', normalizedVariants);
-  console.log('[AVAILABLE SIZES]', availableSizes);
-  console.log('[SELECTED VARIANT]', selectedVariant);
-  console.log('[DISPLAY PRICE]', displayPrice);
   if (notFound) {
     return (
       <div className="product-detail p-8 max-w-6xl mx-auto flex flex-col min-h-screen bg-[#0a0a0a]">
@@ -422,7 +417,13 @@ export default function ProductDetailPage() {
       ? Number(selectedVariant.price)
       : getProductBasePrice(product, normalizedVariants);
 
+  console.log('[PRODUCT DETAIL]', product);
+  console.log('[NORMALIZED VARIANTS]', normalizedVariants);
+  console.log('[AVAILABLE SIZES]', availableSizes);
+  console.log('[SELECTED VARIANT]', selectedVariant);
+  console.log('[DISPLAY PRICE]', displayPrice);
   return (
+
     <div className="product-detail p-8 max-w-6xl mx-auto flex flex-col min-h-screen bg-[#0a0a0a]">
       <Helmet>
         <title>{`${product.name} - TREEWATER STUDIOS`}</title>

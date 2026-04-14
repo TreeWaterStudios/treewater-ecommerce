@@ -50,14 +50,21 @@ function normalizeVariants(product) {
       variant?.values?.size ||
       extractSize(name);
 
+    const rawPrice =
+      variant?.retail_price ??
+      variant?.price ??
+      variant?.priceRetail ??
+      variant?.retailPrice ??
+      variant?.price_in_cents ??
+      variant?.retail_price_in_cents ??
+      0;
+
     const price =
-      Number(
-        variant?.retail_price ??
-        variant?.price ??
-        variant?.priceRetail ??
-        variant?.retailPrice ??
-        0
-      ) || 0;
+      Number(rawPrice) > 0
+        ? Number(rawPrice) > 999
+          ? Number(rawPrice) / 100
+          : Number(rawPrice)
+        : 0;
 
     return {
       ...variant,

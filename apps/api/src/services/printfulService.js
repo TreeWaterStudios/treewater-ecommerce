@@ -252,51 +252,70 @@ export async function getProductById(productId) {
  * @returns {Promise<Object>} Created order object from Printful
  */
 export async function createOrder(orderData) {
-  const { cartItems, customerData, paymentMethod, paymentIntentId, paypalPaymentId } = orderData;
+  const {
+    cartItems,
+    customerData,
+    paymentMethod,
+    paymentIntentId,
+    paypalPaymentId,
+    checkoutSessionId,
+  } = orderData;
 
   logger.info(`🔄 Creating Printful order with ${cartItems.length} items`);
 
-  // Build Printful order items
   const items = cartItems.map((item) => ({
-    sync_variant_id: item.variant_id,
-    quantity: item.quantity,
-    retail_price: item.price,
+    sync_variant_id: Number(item.variant_id || item.variantId),
+    quantity: Number(item.quantity),
+    retail_price: Number(item.price).toFixed(2),
   }));
 
-  // Build Printful order payload
+  const externalId =
+    checkoutSessionId
+      ? `stripe_session_${checkoutSessionId}`
+      : `order_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+
   const orderPayload = {
+    external_id: externalId,
     recipient: {
-      name: `${customerData.firstName} ${customerData.lastName}`,
+      name: `${customerData.firstName} ${customerData.lastName}`.trim(),
       address1: customerData.address,
       city: customerData.city,
       state_code: customerData.state,
       zip: customerData.zip,
-      country_code: customerData.country,
+      country_code: customerData.country || 'US',
       email: customerData.email,
       phone: customerData.phone || '',
     },
     items,
-    external_id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     shipping: 'STANDARD',
     production_delay: 0,
     metadata: {
-      payment_method: paymentMethod,
+      payment_method: paymentMethod || 'stripe',
       payment_intent_id: paymentIntentId || null,
       paypal_payment_id: paypalPaymentId || null,
+      checkout_session_id: checkoutSessionId || null,
     },
   };
 
   logger.info(`📦 Printful order payload: ${JSON.stringify(orderPayload, null, 2)}`);
 
-  // Create order via Printful API
-  const response = await axiosInstance.post('/orders', orderPayload);
-  const order = response.data?.result;
+  try {
+    const response = await axiosInstance.post('/orders', orderPayload);
+    const order = response.data?.result;
 
-  if (!order) {
-    throw new Error('No order data returned from Printful API');
+    if (!order) {
+      throw new Error('No order data returned from Printful API');
+    }
+
+    logger.info(`✅ Successfully created Printful order: ${order.id}`);
+    return order;
+  } catch (error) {
+    const apiMessage =
+      error.response?.data?.error?.message ||
+      error.response?.data?.error ||
+      error.message;
+
+    logger.error(`❌ Printful createOrder failed: ${apiMessage}`);
+    throw error;
   }
-
-  logger.info(`✅ Successfully created Printful order: ${order.id}`);
-
-  return order;
 }

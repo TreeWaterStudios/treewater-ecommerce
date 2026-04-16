@@ -1,7 +1,6 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,88 +11,139 @@ import Footer from '@/components/Footer.jsx';
 import { toast } from 'sonner';
 import { useCart } from '@/hooks/useCart.jsx';
 import { Loader2 } from 'lucide-react';
-import { createOrder } from '@/api/printfulApi.js';
+import { createStripeCheckoutSession, getStripeSession } from '@/api/checkoutApi.js';
 
 const CheckoutPage = () => {
   const { cartItems, getCartTotal, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
-    customerName: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    shippingAddress: '',
+    address: '',
     city: '',
     state: '',
-    zip: ''
+    zip: '',
+    country: 'US',
+    phone: '',
   });
 
   const { subtotal, tax } = getCartTotal();
-  const shippingCost = 0; // Free shipping for local mock
+  const shippingCost = 0;
   const finalTotal = subtotal + tax + shippingCost;
 
+  const normalizedCartItems = useMemo(() => {
+    return cartItems.map((item) => ({
+      id: item.id,
+      productId: item.productId,
+      variant_id: item.variant_id || item.variantId,
+      name: item.name,
+      price: Number(item.price || 0),
+      quantity: Number(item.quantity || 1),
+      image: item.image || '',
+      selectedOptions: item.selectedOptions || {},
+      color: item.selectedOptions?.color || '',
+      size: item.selectedOptions?.size || '',
+    }));
+  }, [cartItems]);
+
   useEffect(() => {
-    if (cartItems.length === 0) {
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get('session_id');
+    const success = params.get('success');
+    const canceled = params.get('canceled');
+
+    if (canceled === '1') {
+      toast.error('Checkout canceled');
+      navigate('/checkout', { replace: true });
+      return;
+    }
+
+    if (success === '1' && sessionId) {
+      let isMounted = true;
+
+      const verifySession = async () => {
+        try {
+          setVerifying(true);
+          const session = await getStripeSession(sessionId);
+
+          if (!isMounted) return;
+
+          if (session.paymentStatus === 'paid') {
+            clearCart();
+            toast.success('Payment successful! Your order is being processed.');
+            navigate('/merchandise', { replace: true });
+          } else {
+            toast.error('Payment not completed');
+            navigate('/checkout', { replace: true });
+          }
+        } catch (error) {
+          if (!isMounted) return;
+          toast.error(error.message || 'Could not verify payment');
+          navigate('/checkout', { replace: true });
+        } finally {
+          if (isMounted) setVerifying(false);
+        }
+      };
+
+      verifySession();
+
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [location.search, clearCart, navigate]);
+
+  useEffect(() => {
+    if (!cartItems.length && !new URLSearchParams(location.search).get('success')) {
       navigate('/merchandise');
     }
-  }, [cartItems, navigate]);
+  }, [cartItems, navigate, location.search]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePlaceOrder = async (e) => {
+  const handleStripeCheckout = async (e) => {
     e.preventDefault();
 
-    if (!formData.customerName || !formData.email || !formData.shippingAddress || !formData.city || !formData.state || !formData.zip) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.address || !formData.city || !formData.state || !formData.zip || !formData.country) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-
-    if (cartItems.length === 0) {
+    if (!normalizedCartItems.length) {
       toast.error('Your cart is empty');
       return;
     }
 
     setLoading(true);
-    
+
     try {
-      const orderData = {
-        recipient: {
-          name: formData.customerName,
-          address1: formData.shippingAddress,
-          city: formData.city,
-          state_code: formData.state,
-          country_code: 'US', // Defaulting to US for this implementation
-          zip: formData.zip,
-          email: formData.email
-        },
-        items: cartItems.map(item => ({
-          variant_id: item.variant_id,
-          quantity: item.quantity
-        }))
-      };
+      const baseUrl = window.location.origin;
+      const successUrl = `${baseUrl}/checkout?success=1&session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${baseUrl}/checkout?canceled=1`;
 
-      await createOrder(orderData);
+      const { url } = await createStripeCheckoutSession({
+        cartItems: normalizedCartItems,
+        customerData: formData,
+        successUrl,
+        cancelUrl,
+      });
 
-      toast.success(`Order placed successfully! Confirmation sent to ${formData.email}`);
-      clearCart();
-      
-      setTimeout(() => {
-        navigate('/success');
-      }, 2000);
+      if (!url) {
+        throw new Error('Stripe checkout URL missing');
+      }
 
+      window.location.href = url;
     } catch (error) {
-      console.error('Order failed:', error);
-      toast.error('Failed to place order. Please try again.');
-    } finally {
+      console.error('Stripe checkout failed:', error);
+      toast.error(error.message || 'Failed to start checkout');
       setLoading(false);
     }
   };
@@ -118,18 +168,29 @@ const CheckoutPage = () => {
                   <CardTitle>Shipping Information</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="customerName">Full Name</Label>
-                      <Input
-                        id="customerName"
-                        name="customerName"
-                        placeholder="John Doe"
-                        value={formData.customerName}
-                        onChange={handleInputChange}
-                        className="bg-background text-foreground"
-                        required
-                      />
+                  <form id="checkout-form" onSubmit={handleStripeCheckout} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -138,23 +199,19 @@ const CheckoutPage = () => {
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="john@example.com"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="bg-background text-foreground"
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="shippingAddress">Street Address</Label>
+                      <Label htmlFor="address">Street Address</Label>
                       <Input
-                        id="shippingAddress"
-                        name="shippingAddress"
-                        placeholder="123 Main St"
-                        value={formData.shippingAddress}
+                        id="address"
+                        name="address"
+                        value={formData.address}
                         onChange={handleInputChange}
-                        className="bg-background text-foreground"
                         required
                       />
                     </div>
@@ -165,37 +222,55 @@ const CheckoutPage = () => {
                         <Input
                           id="city"
                           name="city"
-                          placeholder="New York"
                           value={formData.city}
                           onChange={handleInputChange}
-                          className="bg-background text-foreground"
                           required
                         />
                       </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="state">State / Province</Label>
+                        <Label htmlFor="state">State</Label>
                         <Input
                           id="state"
                           name="state"
-                          placeholder="NY"
                           value={formData.state}
                           onChange={handleInputChange}
-                          className="bg-background text-foreground"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="zip">ZIP</Label>
+                        <Input
+                          id="zip"
+                          name="zip"
+                          value={formData.zip}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="country">Country Code</Label>
+                        <Input
+                          id="country"
+                          name="country"
+                          value={formData.country}
+                          onChange={handleInputChange}
                           required
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="zip">ZIP / Postal Code</Label>
+                      <Label htmlFor="phone">Phone</Label>
                       <Input
-                        id="zip"
-                        name="zip"
-                        placeholder="10001"
-                        value={formData.zip}
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
                         onChange={handleInputChange}
-                        className="bg-background text-foreground"
-                        required
                       />
                     </div>
                   </form>
@@ -210,18 +285,20 @@ const CheckoutPage = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="max-h-[40vh] overflow-y-auto pr-2 space-y-4 custom-scrollbar">
-                    {cartItems.map((item) => (
+                    {normalizedCartItems.map((item) => (
                       <div key={item.id} className="flex justify-between items-start gap-4">
                         <div className="flex-grow min-w-0">
                           <p className="font-medium truncate">{item.name}</p>
                           <p className="text-sm text-muted-foreground capitalize">
-                            {item.size && `${item.size}`}
-                            {item.size && item.color && ' / '}
-                            {item.color && `${item.color}`}
+                            {item.selectedOptions?.size && `${item.selectedOptions.size}`}
+                            {item.selectedOptions?.size && item.selectedOptions?.color && ' / '}
+                            {item.selectedOptions?.color && `${item.selectedOptions.color}`}
                             <span className="ml-2">× {item.quantity}</span>
                           </p>
                         </div>
-                        <p className="font-semibold flex-shrink-0">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-semibold flex-shrink-0">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -239,7 +316,7 @@ const CheckoutPage = () => {
                     </div>
                     <div className="flex justify-between text-muted-foreground">
                       <span>Shipping</span>
-                      <span>Free</span>
+                      <span>Calculated by Stripe</span>
                     </div>
                   </div>
 
@@ -253,13 +330,16 @@ const CheckoutPage = () => {
                   <Button
                     type="submit"
                     form="checkout-form"
-                    disabled={loading || cartItems.length === 0}
+                    disabled={loading || verifying || normalizedCartItems.length === 0}
                     className="w-full mt-6 bg-primary text-primary-foreground hover:bg-primary/90 py-6 text-lg active:scale-[0.98] transition-all"
                   >
-                    {loading ? (
-                      <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
+                    {loading || verifying ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        {verifying ? 'Verifying...' : 'Redirecting...'}
+                      </>
                     ) : (
-                      'Place Order'
+                      'Pay with Stripe'
                     )}
                   </Button>
                 </CardContent>

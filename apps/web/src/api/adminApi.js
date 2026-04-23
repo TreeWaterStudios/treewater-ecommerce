@@ -1,12 +1,16 @@
-import apiServerClient from '@/lib/apiServerClient.js';
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || 'https://treewater-ecommerce.onrender.com';
 
 export const getAdminToken = () => {
-  return localStorage.getItem('adminToken');
+  return localStorage.getItem('adminToken') || '';
 };
 
 export const getAdminUser = () => {
-  const user = localStorage.getItem('adminUser');
-  return user ? JSON.parse(user) : null;
+  try {
+    return JSON.parse(localStorage.getItem('adminUser') || 'null');
+  } catch {
+    return null;
+  }
 };
 
 export const clearAdminSession = () => {
@@ -15,7 +19,7 @@ export const clearAdminSession = () => {
 };
 
 export const adminLogin = async (email, password) => {
-  const response = await apiServerClient.fetch('/admin/login', {
+  const response = await fetch(`${API_BASE}/admin/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -23,34 +27,42 @@ export const adminLogin = async (email, password) => {
     body: JSON.stringify({ email, password }),
   });
 
+  const data = await response.json().catch(() => ({}));
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'Login failed');
+    throw new Error(data.error || data.message || 'Admin login failed');
   }
 
-  const data = await response.json();
   if (data.token) {
     localStorage.setItem('adminToken', data.token);
-    if (data.user) {
-      localStorage.setItem('adminUser', JSON.stringify(data.user));
-    }
   }
+
+  if (data.admin) {
+    localStorage.setItem('adminUser', JSON.stringify(data.admin));
+  }
+
   return data;
 };
 
 export const fetchAdminMe = async () => {
   const token = getAdminToken();
-  if (!token) throw new Error('No admin token');
 
-  const response = await apiServerClient.fetch('/admin/me', {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch admin profile');
+  if (!token) {
+    throw new Error('No admin token');
   }
 
-  return await response.json();
+  const response = await fetch(`${API_BASE}/admin/me`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'Failed to fetch admin profile');
+  }
+
+  return data;
 };

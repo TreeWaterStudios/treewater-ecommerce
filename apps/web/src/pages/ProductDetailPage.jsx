@@ -10,7 +10,8 @@ import { toast } from 'sonner';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
 import { getProduct } from '@/api/EcommerceApi.js';
-import { getMockupsForProduct, uploadMockups } from '@/api/mockupApi.js';
+import { getMockupsForProduct } from '@/api/mockupApi.js';
+import { getAdminToken } from '@/api/adminApi.js';
 
 const fallbackImages = [
   '/images/treewater-hoodie-front.jpg',
@@ -101,6 +102,7 @@ function getProductBasePrice(product, normalizedVariants, fallbackProduct = null
 }
 
 export default function ProductDetailPage() {
+  const isAdmin = !!getAdminToken();
   const params = useParams();
   const productId = params.productId || params.id;
 
@@ -127,13 +129,7 @@ export default function ProductDetailPage() {
     const loadMockups = async () => {
       try {
         const mockups = await getMockupsForProduct(product.id);
-        console.log('[MOCKUPS RAW]', mockups);
-        const urls = mockups.map((m) => {
-          console.log('[MOCKUP ITEM]', m);
-          return m.imageUrl || m.image; // fallback
-        }).filter(Boolean);
-
-        console.log('[MOCKUP URLS]', urls);
+        const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
         if (urls.length > 0) {
           setImages(urls);
@@ -152,10 +148,8 @@ export default function ProductDetailPage() {
     loadMockups();
   }, [product?.id]);
 
-  // Fetch product if not available in location state
   useEffect(() => {
     if (!product && productId) {
-      console.log(`🚀 [ProductDetailPage] Fetching product for ID: ${productId}`);
       setLoading(true);
       setNotFound(false);
       
@@ -167,7 +161,6 @@ export default function ProductDetailPage() {
               ...(data || {})
             }));
           } else {
-            console.warn(`❌ [ProductDetailPage] 404 - Product not found for ID: ${productId}.`);
             setNotFound(true);
             setProduct(null);
           }
@@ -184,6 +177,8 @@ export default function ProductDetailPage() {
   }, [productId, product]);
 
   const handleFileSelect = async (e) => {
+    if (!isAdmin) return;
+    
     const files = Array.from(e.target.files || []);
     if (!files.length || !product?.id) return;
 
@@ -196,7 +191,20 @@ export default function ProductDetailPage() {
 
     try {
       const labels = imageFiles.map((_, i) => `View ${images.length + i + 1}`);
-      await uploadMockups(product.id, imageFiles, labels);
+      const formData = new FormData();
+      formData.append('productId', product.id);
+      imageFiles.forEach((file) => formData.append('images', file));
+      labels.forEach((label) => formData.append('labels', label));
+
+      const res = await fetch('/hcgi/api/mockups/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getAdminToken()}`
+        },
+        body: formData
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
 
       const mockups = await getMockupsForProduct(product.id);
       const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
@@ -314,18 +322,21 @@ export default function ProductDetailPage() {
   };
 
   const handleDragEnter = (e) => {
+    if (!isAdmin) return;
     e.preventDefault();
     e.stopPropagation();
     setDragActive(true);
   };
 
   const handleDragLeave = (e) => {
+    if (!isAdmin) return;
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
   };
 
   const handleDragOver = (e) => {
+    if (!isAdmin) return;
     e.preventDefault();
     e.stopPropagation();
     setDragActive(true);
@@ -335,6 +346,8 @@ export default function ProductDetailPage() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+
+    if (!isAdmin) return;
 
     if (!product?.id) return;
 
@@ -357,7 +370,20 @@ export default function ProductDetailPage() {
 
     try {
       const labels = imageFiles.map((_, i) => `View ${images.length + i + 1}`);
-      await uploadMockups(product.id, imageFiles, labels);
+      const formData = new FormData();
+      formData.append('productId', product.id);
+      imageFiles.forEach((file) => formData.append('images', file));
+      labels.forEach((label) => formData.append('labels', label));
+
+      const res = await fetch('/hcgi/api/mockups/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getAdminToken()}`
+        },
+        body: formData
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
 
       const mockups = await getMockupsForProduct(product.id);
       const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
@@ -433,12 +459,6 @@ export default function ProductDetailPage() {
       ? Number(selectedVariant.price)
       : getProductBasePrice(product, normalizedVariants, stateProduct);
 
-  console.log('[PRODUCT DETAIL]', product);
-  console.log('[NORMALIZED VARIANTS]', normalizedVariants);
-  console.log('[AVAILABLE SIZES]', availableSizes);
-  console.log('[SELECTED VARIANT]', selectedVariant);
-  console.log('[DISPLAY PRICE]', displayPrice);
-
   return (
     <div className="product-detail p-8 max-w-6xl mx-auto flex flex-col min-h-screen bg-[#0a0a0a]">
       <Helmet>
@@ -456,14 +476,16 @@ export default function ProductDetailPage() {
         <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
           {/* Image Gallery */}
           <div className="flex flex-col gap-4">
-            <input
-              id="product-image-upload"
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={handleFileSelect}
-            />
+            {isAdmin && (
+              <input
+                id="product-image-upload"
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+            )}
 
             <motion.div 
               initial={{ opacity: 0, x: -20 }} 
@@ -479,7 +501,7 @@ export default function ProductDetailPage() {
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    title="Drag and drop images here to add custom views"
+                    title={isAdmin ? "Drag and drop images here to add custom views" : undefined}
                   >
                     <motion.img
                       key={mainImage}
@@ -492,7 +514,6 @@ export default function ProductDetailPage() {
                       className="w-full h-full object-contain drop-shadow-2xl"
                       style={{ pointerEvents: 'none' }}
                       onError={(e) => {
-                        console.error('❌ Main image load error:', e.target.src);
                         e.target.src = fallbackImages[0];
                         e.target.onerror = null;
                       }}
@@ -506,21 +527,23 @@ export default function ProductDetailPage() {
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                   >
-                    <div className="animate-pulse">Loading image... (Drop images here)</div>
+                    <div className="animate-pulse">Loading image... {isAdmin && '(Drop images here)'}</div>
                   </div>
                 )}
               </AnimatePresence>
             </motion.div>
 
-            <div className="flex justify-center">
-              <Button
-                type="button"
-                onClick={() => document.getElementById('product-image-upload')?.click()}
-                className="rounded-xl"
-              >
-                Upload Images
-              </Button>
-            </div>
+            {isAdmin && (
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  onClick={() => document.getElementById('product-image-upload')?.click()}
+                  className="rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border-none"
+                >
+                  Upload Images
+                </Button>
+              </div>
+            )}
             
             {images && images.length > 0 ? (
               <div className="flex flex-col gap-3">
@@ -538,7 +561,6 @@ export default function ProductDetailPage() {
                         alt={`View ${idx + 1}`} 
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          console.error('❌ Thumbnail load error:', e.target.src);
                           e.target.src = fallbackImages[0];
                           e.target.onerror = null;
                         }}

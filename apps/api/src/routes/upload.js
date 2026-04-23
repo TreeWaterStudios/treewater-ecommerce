@@ -3,6 +3,7 @@ import express from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import logger from '../utils/logger.js';
+import requireAdminAuth from '../middleware/requireAdminAuth.js';
 
 const router = express.Router();
 
@@ -37,7 +38,7 @@ const fileFilter = (req, file, cb) => {
     cb(null, true);
   } else {
     logger.warn(`[UPLOAD] File MIME type rejected: ${file.mimetype}. Allowed types: ${allowedMimes.join(', ')}`);
-    cb(new Error(`Invalid file type. Only image files are allowed (JPEG, PNG, GIF, WebP)`));
+    cb(new Error('Invalid file type. Only image files are allowed (JPEG, PNG, GIF, WebP)'));
   }
 };
 
@@ -52,59 +53,61 @@ const upload = multer({
 
 /**
  * POST /upload-image
- * Upload a single image file to Cloudinary
- * Accepts: multipart/form-data with 'file' field
- * Returns: { success: true, url: string, public_id: string, size: number }
+ * Admin only
  */
-router.post('/upload-image', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    logger.warn('[UPLOAD] No file provided in request');
-    return res.status(400).json({ error: 'No file provided' });
-  }
-
-  const { originalname, size, mimetype, buffer } = req.file;
-
-  logger.info(`[UPLOAD] Processing file upload`);
-  logger.info(`[UPLOAD]   - Filename: ${originalname}`);
-  logger.info(`[UPLOAD]   - Size: ${size} bytes`);
-  logger.info(`[UPLOAD]   - MIME type: ${mimetype}`);
-
-  // Upload to Cloudinary using buffer
-  const uploadStream = cloudinary.uploader.upload_stream(
-    {
-      folder: 'product-images',
-      resource_type: 'auto',
-      timeout: 60000,
-    },
-    async (error, result) => {
-      if (error) {
-        logger.error(`[UPLOAD] Cloudinary upload failed: ${error.message}`);
-        throw new Error(`Cloudinary upload failed: ${error.message}`);
-      }
-
-      if (!result) {
-        logger.error('[UPLOAD] Cloudinary returned no result');
-        throw new Error('Cloudinary upload returned no result');
-      }
-
-      const { secure_url, public_id } = result;
-
-      logger.info(`[UPLOAD] File uploaded to Cloudinary successfully`);
-      logger.info(`[UPLOAD]   - Public ID: ${public_id}`);
-      logger.info(`[UPLOAD]   - URL: ${secure_url}`);
-      logger.info(`[UPLOAD]   - Size: ${size} bytes`);
-
-      res.json({
-        success: true,
-        url: secure_url,
-        public_id,
-        size,
-      });
+router.post('/upload-image', requireAdminAuth, upload.single('file'), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      logger.warn('[UPLOAD] No file provided in request');
+      return res.status(400).json({ error: 'No file provided' });
     }
-  );
 
-  // Pipe buffer to upload stream
-  uploadStream.end(buffer);
+    const { originalname, size, mimetype, buffer } = req.file;
+
+    logger.info(`[UPLOAD] Admin ${req.admin?.email || req.admin?.id || 'unknown'} uploading image`);
+    logger.info(`[UPLOAD]   - Filename: ${originalname}`);
+    logger.info(`[UPLOAD]   - Size: ${size} bytes`);
+    logger.info(`[UPLOAD]   - MIME type: ${mimetype}`);
+
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'product-images',
+          resource_type: 'auto',
+          timeout: 60000,
+        },
+        (error, result) => {
+          if (error) {
+            logger.error(`[UPLOAD] Cloudinary upload failed: ${error.message}`);
+            reject(new Error(`Cloudinary upload failed: ${error.message}`));
+          } else if (!result) {
+            logger.error('[UPLOAD] Cloudinary returned no result');
+            reject(new Error('Cloudinary upload returned no result'));
+          } else {
+            resolve(result);
+          }
+        }
+      );
+
+      uploadStream.end(buffer);
+    });
+
+    const { secure_url, public_id } = result;
+
+    logger.info('[UPLOAD] File uploaded to Cloudinary successfully');
+    logger.info(`[UPLOAD]   - Public ID: ${public_id}`);
+    logger.info(`[UPLOAD]   - URL: ${secure_url}`);
+    logger.info(`[UPLOAD]   - Size: ${size} bytes`);
+
+    res.json({
+      success: true,
+      url: secure_url,
+      public_id,
+      size,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;

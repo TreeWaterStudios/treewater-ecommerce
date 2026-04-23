@@ -30,7 +30,7 @@ export const adminLogin = async (email, password) => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.error || data.message || 'Admin login failed');
+    throw new Error(data.error || data.message || 'Login failed');
   }
 
   if (data.token) {

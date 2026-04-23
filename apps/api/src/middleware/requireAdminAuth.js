@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import PocketBase from 'pocketbase';
 
 export default async function requireAdminAuth(req, res, next) {

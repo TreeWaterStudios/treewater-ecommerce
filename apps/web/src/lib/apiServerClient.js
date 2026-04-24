@@ -1,4 +1,4 @@
-const API_SERVER_URL = "/hcgi/api";
+const API_SERVER_URL = "https://treewater-ecommerce.onrender.com";
 
 const apiServerClient = {
     fetch: async (url, options = {}) => {

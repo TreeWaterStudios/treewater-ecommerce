@@ -196,7 +196,7 @@ export default function ProductDetailPage() {
       imageFiles.forEach((file) => formData.append('images', file));
       labels.forEach((label) => formData.append('labels', label));
 
-      const res = await fetch('/hcgi/api/mockups/upload', {
+      const res = await fetch('https://treewater-ecommerce.onrender.com/mockups/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${getAdminToken()}`
@@ -375,7 +375,7 @@ export default function ProductDetailPage() {
       imageFiles.forEach((file) => formData.append('images', file));
       labels.forEach((label) => formData.append('labels', label));
 
-      const res = await fetch('/hcgi/api/mockups/upload', {
+      const res = await fetch('https://treewater-ecommerce.onrender.com/mockups/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${getAdminToken()}`

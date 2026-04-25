@@ -12,6 +12,7 @@ import Footer from '@/components/Footer.jsx';
 import { getProduct } from '@/api/EcommerceApi.js';
 import { getMockupsForProduct } from '@/api/mockupApi.js';
 import { getAdminToken } from '@/api/adminApi.js';
+import { clearAdminSession } from '@/api/adminApi.js';
 
 const fallbackImages = [
   '/images/treewater-hoodie-front.jpg',
@@ -195,6 +196,7 @@ export default function ProductDetailPage() {
       formData.append('productId', product.id);
       formData.append('file', imageFiles[0]);
       formData.append('label', labels[0] || 'Mockup');
+
       const token = getAdminToken();
 
 if (!token) {
@@ -544,7 +546,7 @@ if (!token) {
             </motion.div>
 
             {isAdmin && (
-              <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-3">
                 <Button
                   type="button"
                   onClick={() => document.getElementById('product-image-upload')?.click()}
@@ -552,6 +554,17 @@ if (!token) {
                 >
                   Upload Images
                 </Button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearAdminSession();
+                    window.location.reload();
+                  }}
+                  className="text-xs text-red-400 hover:text-red-300 underline"
+                >
+                  Admin Logout
+                </button>
               </div>
             )}
             

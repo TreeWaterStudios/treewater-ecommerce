@@ -202,7 +202,7 @@ if (!token) {
   throw new Error('No admin token found');
 }
 
-      const res = await fetch('https://treewater-ecommerce.onrender.com/mockups/upload', {
+      const res = await fetch('https://treewater-ecommerce.onrender.com/upload-image', {
       method: 'POST',
       headers: {
       Authorization: `Bearer ${token}`,
@@ -387,7 +387,7 @@ if (!token) {
       throw new Error('No admin token found');
       }
 
-      const res = await fetch('https://treewater-ecommerce.onrender.com/mockups/upload', {
+      const res = await fetch('https://treewater-ecommerce.onrender.com/upload-image', {
       method: 'POST',
       headers: {
       Authorization: `Bearer ${token}`,

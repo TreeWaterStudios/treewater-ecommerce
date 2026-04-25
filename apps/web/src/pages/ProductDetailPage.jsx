@@ -196,13 +196,19 @@ export default function ProductDetailPage() {
       imageFiles.forEach((file) => formData.append('images', file));
       labels.forEach((label) => formData.append('labels', label));
 
+      const token = getAdminToken();
+
+if (!token) {
+  throw new Error('No admin token found');
+}
+
       const res = await fetch('https://treewater-ecommerce.onrender.com/mockups/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${getAdminToken()}`
-        },
-        body: formData
-      });
+      method: 'POST',
+      headers: {
+      Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+  });
 
       if (!res.ok) throw new Error('Upload failed');
 
@@ -375,14 +381,19 @@ export default function ProductDetailPage() {
       imageFiles.forEach((file) => formData.append('images', file));
       labels.forEach((label) => formData.append('labels', label));
 
-      const res = await fetch('https://treewater-ecommerce.onrender.com/mockups/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${getAdminToken()}`
-        },
-        body: formData
-      });
+    const token = getAdminToken();
 
+      if (!token) {
+      throw new Error('No admin token found');
+      }
+
+      const res = await fetch('https://treewater-ecommerce.onrender.com/mockups/upload', {
+      method: 'POST',
+      headers: {
+      Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+  });
       if (!res.ok) throw new Error('Upload failed');
 
       const mockups = await getMockupsForProduct(product.id);

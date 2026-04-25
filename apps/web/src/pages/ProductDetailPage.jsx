@@ -193,9 +193,8 @@ export default function ProductDetailPage() {
       const labels = imageFiles.map((_, i) => `View ${images.length + i + 1}`);
       const formData = new FormData();
       formData.append('productId', product.id);
-      imageFiles.forEach((file) => formData.append('images', file));
-      labels.forEach((label) => formData.append('labels', label));
-
+      formData.append('file', imageFiles[0]);
+      formData.append('label', labels[0] || 'Mockup');
       const token = getAdminToken();
 
 if (!token) {
@@ -378,8 +377,8 @@ if (!token) {
       const labels = imageFiles.map((_, i) => `View ${images.length + i + 1}`);
       const formData = new FormData();
       formData.append('productId', product.id);
-      imageFiles.forEach((file) => formData.append('images', file));
-      labels.forEach((label) => formData.append('labels', label));
+      formData.append('file', imageFiles[0]);
+      formData.append('label', labels[0] || 'Mockup');
 
     const token = getAdminToken();
 

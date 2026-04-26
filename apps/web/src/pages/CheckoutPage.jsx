@@ -126,8 +126,8 @@ const CheckoutPage = () => {
 
     try {
       const baseUrl = window.location.origin;
-      const successUrl = `${baseUrl}/checkout?success=1`;
-      const cancelUrl = `${baseUrl}/checkout?canceled=1`;
+      const successUrl = `https://treewaterstudios.com/checkout?success=1`;
+      const cancelUrl = `https://treewaterstudios.com/checkout?canceled=1`;
 
       const { url } = await createStripeCheckoutSession({
         cartItems: normalizedCartItems,

@@ -7,7 +7,7 @@ export async function createStripeCheckoutSession({
   successUrl,
   cancelUrl,
 }) {
-  const response = await fetch(`${API_BASE}/checkout/create-checkout-session`, {
+  const response = await fetch(`${API_BASE}/stripe/create-checkout`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -24,6 +24,18 @@ export async function createStripeCheckoutSession({
 
   if (!response.ok) {
     throw new Error(data.error || 'Failed to create Stripe checkout session');
+  }
+
+  return data;
+}
+
+export async function getStripeSession(sessionId) {
+  const response = await fetch(`${API_BASE}/stripe/session/${sessionId}`);
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to fetch Stripe session');
   }
 
   return data;

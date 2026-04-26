@@ -126,7 +126,7 @@ const CheckoutPage = () => {
 
     try {
       const baseUrl = window.location.origin;
-      const successUrl = `${baseUrl}/checkout?success=1&session_id={CHECKOUT_SESSION_ID}`;
+      const successUrl = `${baseUrl}/checkout?success=1`;
       const cancelUrl = `${baseUrl}/checkout?canceled=1`;
 
       const { url } = await createStripeCheckoutSession({

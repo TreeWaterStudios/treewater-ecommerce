@@ -305,14 +305,30 @@ if (!token) {
         ? Number(selectedVariant.price)
         : getProductBasePrice(product, normalizedVariants, stateProduct);
 
+    const cartImage =
+      mainImage ||
+      images[0] ||
+      product.thumbnail_url ||
+      product.thumbnail ||
+      product.image ||
+      fallbackImages[0];
+
     const cartItem = {
-      id: `${product.id}-${selectedVariant.variant_id}`,
+      id: `${product.id}-${selectedVariant.id || selectedVariant.variant_id}`,
       productId: product.id,
+
+      // Printful order needs this
+      sync_variant_id: selectedVariant.id,
+
+      // Keep these for frontend compatibility
+      variant_id: selectedVariant.variant_id,
       variantId: selectedVariant.variant_id,
+
       name: product.name,
       price: finalPrice,
       quantity,
-      image: mainImage || images[0] || fallbackImages[0],
+      image: cartImage,
+
       selectedOptions: {
         color: selectedVariant.color || selectedColor || '',
         size: selectedVariant.size || selectedSize || ''

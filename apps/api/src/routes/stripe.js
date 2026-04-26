@@ -144,7 +144,10 @@ router.post('/create-checkout', async (req, res, next) => {
         currency: 'usd',
         product_data: {
           name: item.name || 'TreeWater Product',
-          images: item.image ? [item.image] : [],
+          images:
+            item.image && item.image.startsWith('https://')
+              ? [item.image]
+              : [],
           metadata: {
             variant_id: String(item.variant_id || item.variantId),
             color: item.selectedOptions?.color || item.color || '',

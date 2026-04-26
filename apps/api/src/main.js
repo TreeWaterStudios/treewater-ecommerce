@@ -83,7 +83,6 @@ app.use(morgan('combined'));
 // IMPORTANT: Stripe webhook must use raw body BEFORE express.json()
 app.use('/stripe/webhook', express.raw({ type: 'application/json' }));
 
-app.use('/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

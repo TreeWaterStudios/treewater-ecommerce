@@ -105,8 +105,14 @@ function validateCheckoutInput(cartItems, customerData, successUrl, cancelUrl) {
   }
 
   for (const item of cartItems) {
-    if (!item.variant_id && !item.variantId) {
-      throw new Error('Each cart item must include variant_id or variantId');
+    const syncVariantId =
+      item.sync_variant_id ||
+      item.syncVariantId ||
+      item.variant_id ||
+      item.variantId;
+
+    if (!syncVariantId) {
+      throw new Error('Each cart item must include sync_variant_id');
     }
     if (!item.quantity || Number(item.quantity) <= 0) {
       throw new Error('Each cart item must include a valid quantity');
@@ -158,7 +164,12 @@ router.post('/create-checkout', async (req, res, next) => {
               ? [item.image]
               : [],
           metadata: {
-            variant_id: String(item.variant_id || item.variantId),
+            sync_variant_id: String(
+              item.sync_variant_id ||
+              item.syncVariantId ||
+              item.variant_id ||
+              item.variantId
+            ),
             color: item.selectedOptions?.color || item.color || '',
             size: item.selectedOptions?.size || item.size || '',
           },

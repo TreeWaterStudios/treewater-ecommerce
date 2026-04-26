@@ -263,25 +263,24 @@ export async function createOrder(orderData) {
 
   logger.info(`🔄 Creating Printful order with ${cartItems.length} items`);
 
-  const items = cartItems
-    .map((item) => {
-      const syncVariantId =
-        item.sync_variant_id ||
-        item.syncVariantId ||
-        item.variant_id ||
-        item.variantId;
+  const items = cartItems.map((item) => {
+    const syncVariantId =
+      item.sync_variant_id ||
+      item.syncVariantId ||
+      item.variant_id ||
+      item.variantId;
 
-      return {
-        sync_variant_id: Number(syncVariantId),
-        quantity: Number(item.quantity || 1),
-        retail_price: Number(item.price || 0).toFixed(2),
-      };
-    })
-    .filter((item) => Number.isFinite(item.sync_variant_id) && item.sync_variant_id > 0);
+    if (!syncVariantId || !Number.isFinite(Number(syncVariantId)) || Number(syncVariantId) <= 0) {
+      logger.error(`[PRINTFUL ORDER ERROR] Missing sync_variant_id: ${JSON.stringify(item)}`);
+      throw new Error('No valid Printful sync_variant_id found in cart items');
+    }
 
-  if (!items.length) {
-    throw new Error('No valid Printful sync_variant_id found in cart items');
-  }
+    return {
+      sync_variant_id: Number(syncVariantId),
+      quantity: Number(item.quantity || 1),
+      retail_price: Number(item.price || 0).toFixed(2),
+    };
+  });
 
   const externalId =
     checkoutSessionId

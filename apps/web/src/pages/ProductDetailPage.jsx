@@ -318,7 +318,11 @@ if (!token) {
       productId: product.id,
 
       // Printful order needs this
-      sync_variant_id: selectedVariant.id,
+      sync_variant_id:
+        selectedVariant?.sync_variant_id ||
+        selectedVariant?.syncVariantId ||
+        selectedVariant?.variant_id ||
+        selectedVariant?.id,
 
       // Keep these for frontend compatibility
       variant_id: selectedVariant.variant_id,
@@ -334,6 +338,9 @@ if (!token) {
         size: selectedVariant.size || selectedSize || ''
       }
     };
+
+    console.log('[CART VARIANT CHECK]', selectedVariant);
+    console.log('[CART ITEM CHECK]', cartItem);
 
     addToCart(cartItem);
 

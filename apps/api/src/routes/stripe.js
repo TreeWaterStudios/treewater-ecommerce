@@ -25,15 +25,24 @@ function chunkString(value, size = 450) {
 
 function buildMetadata(cartItems = [], customerData = {}) {
   const compactCart = cartItems.map((item) => ({
-    id: item.id || null,
-    variant_id: item.variant_id || item.variantId || null,
-    quantity: Number(item.quantity || 1),
-    price: Number(item.price || 0),
-    name: item.name || 'Product',
-    color: item.selectedOptions?.color || item.color || '',
-    size: item.selectedOptions?.size || item.size || '',
-    image: item.image || '',
-  }));
+  id: item.id || null,
+
+  sync_variant_id:
+    item.sync_variant_id ||
+    item.syncVariantId ||
+    item.variant_id ||
+    item.variantId ||
+    null,
+
+  variant_id: item.variant_id || item.variantId || null,
+
+  quantity: Number(item.quantity || 1),
+  price: Number(item.price || 0),
+  name: item.name || 'Product',
+  color: item.selectedOptions?.color || item.color || '',
+  size: item.selectedOptions?.size || item.size || '',
+  image: item.image || '',
+}));
 
   const compactCustomer = {
     firstName: customerData.firstName || '',

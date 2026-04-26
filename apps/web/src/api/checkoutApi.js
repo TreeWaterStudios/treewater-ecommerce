@@ -1,8 +1,13 @@
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+  import.meta.env.VITE_API_BASE_URL || 'https://treewater-api.onrender.com';
 
-export async function createStripeCheckoutSession({ cartItems, customerData, successUrl, cancelUrl }) {
-  const response = await fetch(`${API_BASE}/stripe/create-checkout`, {
+export async function createStripeCheckoutSession({
+  cartItems,
+  customerData,
+  successUrl,
+  cancelUrl,
+}) {
+  const response = await fetch(`${API_BASE}/checkout/create-checkout-session`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -25,7 +30,7 @@ export async function createStripeCheckoutSession({ cartItems, customerData, suc
 }
 
 export async function getStripeSession(sessionId) {
-  const response = await fetch(`${API_BASE}/stripe/session/${sessionId}`);
+  const response = await fetch(`${API_BASE}/checkout/session/${sessionId}`);
 
   const data = await response.json().catch(() => ({}));
 

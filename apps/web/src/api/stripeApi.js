@@ -1,26 +1,23 @@
 
-import apiServerClient from '@/lib/apiServerClient.js';
+const API_BASE = 'https://treewater-api.onrender.com';
 
-export const createPaymentIntent = async (amount, currency = 'usd', metadata = {}) => {
+export const createCheckoutSession = async (cartItems) => {
   try {
-    const response = await apiServerClient.fetch('/stripe/create-payment-intent', {
+    const res = await fetch(`${API_BASE}/checkout/create-checkout-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount, currency, metadata })
+      body: JSON.stringify({ cartItems }),
     });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to initialize payment');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Stripe API Error (createPaymentIntent):', error);
-    throw error;
-  }
-};
 
-export default {
-  createPaymentIntent
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Checkout failed');
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Stripe Checkout Error:', err);
+    throw err;
+  }
 };

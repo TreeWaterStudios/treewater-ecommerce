@@ -1,5 +1,6 @@
 const ECOMMERCE_API_URL = "https://api-ecommerce.hostinger.com";
 const ECOMMERCE_STORE_ID = "store_01KMCJKPFCA2CXS4AH4CF8QMFE";
+const API_BASE = "https://treewater-ecommerce.onrender.com";
 
 export const formatCurrency = (priceInCents, currencyInfo) => {
 	if (!currencyInfo || priceInCents === null || priceInCents === undefined) {
@@ -471,7 +472,18 @@ export async function getProduct(id, {field} = {}) {
 	const product = data.product;
 
 	const { price_in_cents, currency } = getProductPrice(product);
+      let printfulProduct = null;
 
+      try {
+        const printfulId = String(id).replace('prod_', '');
+        const printfulRes = await fetch(`${API_BASE}/printful/products/${printfulId}`);
+
+        if (printfulRes.ok) {
+          printfulProduct = await printfulRes.json();
+        }
+      } catch (err) {
+        console.warn('Could not fetch Printful product details:', err);
+      }
 	return {
 		id: product.id,
 		title: product.title,
@@ -487,7 +499,8 @@ export async function getProduct(id, {field} = {}) {
 		site_product_selection: product.site_product_selection,
 		images: extractImages(product.media),
 		options: extractProductOptions(product.options),
-		variants: extractVariants(product.variants),
+		sync_variants: printfulProduct?.sync_variants || [],
+                variants: printfulProduct?.sync_variants || extractVariants(product.variants),
 		collections: extractCollections(product.product_collections),
 		additional_info: extractAdditionalInfo(product.additional_info),
 		type: {

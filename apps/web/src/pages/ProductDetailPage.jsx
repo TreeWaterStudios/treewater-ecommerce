@@ -69,29 +69,29 @@ function normalizeVariants(product) {
         : 0;
 
     return {
-  ...variant,
+      ...variant,
 
-  // ✅ KEEP REAL PRINTFUL ID
-  sync_variant_id:
-  Number.isFinite(Number(variant?.sync_variant_id))
-    ? Number(variant.sync_variant_id)
-    : Number.isFinite(Number(variant?.id))
-      ? Number(variant.id)
-      : Number.isFinite(Number(variant?.sync_variant?.id))
-        ? Number(variant.sync_variant.id)
-        : null,
+      // ✅ KEEP REAL PRINTFUL ID
+      sync_variant_id:
+        Number.isFinite(Number(variant?.sync_variant_id))
+          ? Number(variant.sync_variant_id)
+          : Number.isFinite(Number(variant?.id))
+            ? Number(variant.id)
+            : Number.isFinite(Number(variant?.sync_variant?.id))
+              ? Number(variant.sync_variant.id)
+              : null,
 
-  // keep UI compatibility
-  variant_id:
-    variant?.variant_id ||
-    variant?.id ||
-    `variant-${index}`,
+      // keep UI compatibility
+      variant_id:
+        variant?.variant_id ||
+        variant?.id ||
+        `variant-${index}`,
 
-  color: String(color || '').trim(),
-  size: String(size || '').toUpperCase().trim(),
-  price,
-  in_stock: variant?.in_stock,
-};
+      color: String(color || '').trim(),
+      size: String(size || '').toUpperCase().trim(),
+      price,
+      in_stock: variant?.in_stock,
+    };
   });
 }
 
@@ -162,7 +162,7 @@ export default function ProductDetailPage() {
   }, [product?.id]);
 
   useEffect(() => {
-    if (!product && productId) {
+    if (productId) {
       setLoading(true);
       setNotFound(false);
       
@@ -188,7 +188,7 @@ export default function ProductDetailPage() {
           setLoading(false);
         });
     }
-  }, [productId, product]);
+  }, [productId]);
 
   const handleFileSelect = async (e) => {
     if (!isAdmin) return;
@@ -354,7 +354,7 @@ if (!token) {
     console.log('[CART VARIANT CHECK]', selectedVariant);
     console.log('[CART ITEM CHECK]', cartItem);
     console.log('FULL VARIANT OBJECT:', selectedVariant);
-
+    
     addToCart(cartItem);
 
     toast.success('Added to cart', {

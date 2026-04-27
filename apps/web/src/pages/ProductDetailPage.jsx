@@ -29,10 +29,10 @@ function extractSize(value = '') {
 
 function normalizeVariants(product) {
   const rawVariants =
-    product?.variants ||
     product?.sync_variants ||
-    product?.data?.variants ||
     product?.data?.sync_variants ||
+    product?.variants ||
+    product?.data?.variants ||
     [];
 
   if (!Array.isArray(rawVariants)) return [];
@@ -69,17 +69,29 @@ function normalizeVariants(product) {
         : 0;
 
     return {
-      ...variant,
-      variant_id:
-        variant?.variant_id ||
-        variant?.id ||
-        variant?.sync_variant_id ||
-        `variant-${index}`,
-      color: String(color || '').trim(),
-      size: String(size || '').toUpperCase().trim(),
-      price,
-      in_stock: variant?.in_stock
-    };
+  ...variant,
+
+  // ✅ KEEP REAL PRINTFUL ID
+  sync_variant_id:
+  Number.isFinite(Number(variant?.sync_variant_id))
+    ? Number(variant.sync_variant_id)
+    : Number.isFinite(Number(variant?.id))
+      ? Number(variant.id)
+      : Number.isFinite(Number(variant?.sync_variant?.id))
+        ? Number(variant.sync_variant.id)
+        : null,
+
+  // keep UI compatibility
+  variant_id:
+    variant?.variant_id ||
+    variant?.id ||
+    `variant-${index}`,
+
+  color: String(color || '').trim(),
+  size: String(size || '').toUpperCase().trim(),
+  price,
+  in_stock: variant?.in_stock,
+};
   });
 }
 
@@ -321,8 +333,7 @@ if (!token) {
       sync_variant_id:
         selectedVariant?.sync_variant_id ||
         selectedVariant?.syncVariantId ||
-        selectedVariant?.variant_id ||
-        selectedVariant?.id,
+        null,
 
       // Keep these for frontend compatibility
       variant_id: selectedVariant.variant_id,
@@ -341,6 +352,7 @@ if (!token) {
 
     console.log('[CART VARIANT CHECK]', selectedVariant);
     console.log('[CART ITEM CHECK]', cartItem);
+    console.log('FULL VARIANT OBJECT:', selectedVariant);
 
     addToCart(cartItem);
 

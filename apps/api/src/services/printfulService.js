@@ -90,7 +90,10 @@ export function formatProductForFrontend(printfulProduct) {
     description: printfulProduct.description || null,
     price: basePrice,
     sync_product: syncProduct,
-    sync_variants: syncVariants,
+    sync_variants: syncVariants.map((variant) => ({
+  ...variant,
+  sync_variant_id: variant.id,
+})),
     variant_count: variantCount,
   };
 }

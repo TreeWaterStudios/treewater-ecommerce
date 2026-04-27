@@ -476,7 +476,7 @@ export async function getProduct(id, {field} = {}) {
 
       try {
         const printfulId = String(id).replace('prod_', '');
-        const printfulRes = await fetch(`${API_BASE}/printful/products/${printfulId}`);
+        const printfulRes = await fetch(`${API_BASE}/products/${printfulId}`);
 
         if (printfulRes.ok) {
           printfulProduct = await printfulRes.json();

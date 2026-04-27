@@ -131,6 +131,7 @@ const getProductPrice = (product) => {
 	const currency = selectedVariant?.prices[0]?.currency_code || "eur";
 
 	// price_in_cents is the price value in cents, make sure to convert it to a full price based on decimal_digits
+        console.log('[GET PRODUCT FINAL VARIANTS]', printfulProduct?.sync_variants || extractVariants(product.variants));
 	return { price_in_cents, currency };
 };
 
@@ -480,6 +481,8 @@ export async function getProduct(id, {field} = {}) {
 
         if (printfulRes.ok) {
           printfulProduct = await printfulRes.json();
+        console.log('[PRINTFUL PRODUCT FETCH]', printfulProduct);
+        console.log('[PRINTFUL SYNC VARIANTS]', printfulProduct?.sync_variants);
         }
       } catch (err) {
         console.warn('Could not fetch Printful product details:', err);

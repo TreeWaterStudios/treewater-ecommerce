@@ -171,7 +171,8 @@ export default function ProductDetailPage() {
           if (data) {
             setProduct((prev) => ({
               ...(prev || {}),
-              ...(data || {})
+              ...(data || {}),
+              variants: data?.sync_variants || data?.variants || prev?.variants || [],
             }));
           } else {
             setNotFound(true);

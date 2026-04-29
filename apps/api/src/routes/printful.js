@@ -9,6 +9,12 @@ const router = express.Router();
  * Get all products from Printful API with full sync_product and sync_variants structure
  * Returns: Array of products with id, printful_id, name, description, price, sync_product, sync_variants, variant_count
  */
+
+router.get('/products/:id', async (req, res) => {
+  const product = await printfulService.getProductById(req.params.id);
+  res.json(product);
+});
+
 router.get('/products', async (req, res) => {
   logger.info('GET /products - Fetching all products from Printful');
   

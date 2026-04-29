@@ -326,17 +326,20 @@ if (!token) {
       product.image ||
       fallbackImages[0];
 
+    const realVariant = product.sync_variants?.find(
+      v =>
+        v.id === selectedVariant?.id ||
+        v.variant_id === selectedVariant?.variant_id ||
+        v.name === selectedVariant?.title
+    );
+
     const cartItem = {
       id: `${product.id}-${selectedVariant?.id || selectedVariant?.variant_id || selectedVariant?.sync_variant_id || selectedVariant?.syncVariantId}`,
       productId: product.id,
 
       // Printful order needs this
       sync_variant_id:
-        selectedVariant?.sync_variant_id ||
-        selectedVariant?.syncVariantId ||
-        selectedVariant?.variant_id ||
-        selectedVariant?.id ||
-        null,
+        realVariant?.id || null,
 
       // Keep these for frontend compatibility
       variant_id: selectedVariant.variant_id,

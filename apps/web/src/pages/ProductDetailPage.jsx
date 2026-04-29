@@ -75,10 +75,10 @@ function normalizeVariants(product) {
       sync_variant_id:
         Number.isFinite(Number(variant?.sync_variant_id))
           ? Number(variant.sync_variant_id)
-          : Number.isFinite(Number(variant?.id))
-            ? Number(variant.id)
-            : Number.isFinite(Number(variant?.sync_variant?.id))
-              ? Number(variant.sync_variant.id)
+          : Number.isFinite(Number(variant?.sync_variant?.id))
+            ? Number(variant.sync_variant.id)
+            : Number.isFinite(Number(variant?.external_id))
+              ? Number(variant.external_id)
               : null,
 
       // keep UI compatibility
@@ -339,7 +339,7 @@ if (!token) {
 
       // Printful order needs this
       sync_variant_id:
-        realVariant?.id || null,
+        selectedVariant?.sync_variant_id || null,
 
       // Keep these for frontend compatibility
       variant_id: selectedVariant.variant_id,

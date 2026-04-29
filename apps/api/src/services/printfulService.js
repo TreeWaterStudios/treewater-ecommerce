@@ -92,7 +92,7 @@ export function formatProductForFrontend(printfulProduct) {
     sync_product: syncProduct,
     sync_variants: syncVariants.map((variant) => ({
   ...variant,
-  sync_variant_id: variant.sync_variant_id || variant.id,
+  sync_variant_id: variant.id,
 })),
     variant_count: variantCount,
   };

@@ -1,6 +1,7 @@
 const ECOMMERCE_API_URL = "https://api-ecommerce.hostinger.com";
 const ECOMMERCE_STORE_ID = "store_01KMCJKPFCA2CXS4AH4CF8QMFE";
 const API_BASE = "https://treewater-ecommerce.onrender.com";
+const API_BASE = "/hcgi/api";
 
 export const formatCurrency = (priceInCents, currencyInfo) => {
 	if (!currencyInfo || priceInCents === null || priceInCents === undefined) {
@@ -476,17 +477,23 @@ export async function getProduct(id, {field} = {}) {
       let printfulProduct = null;
 
       try {
-        const printfulId = String(id).replace('prod_', '');
-        const printfulRes = await fetch(`${API_BASE}/printful/products/${printfulId}`);
+        const printfulRes = await fetch(`${API_BASE}/printful/products`);
 
         if (printfulRes.ok) {
-          printfulProduct = await printfulRes.json();
-        console.log('[PRINTFUL PRODUCT FETCH]', printfulProduct);
-        console.log('[PRINTFUL SYNC VARIANTS]', printfulProduct?.sync_variants);
+          const printfulProducts = await printfulRes.json();
+
+          printfulProduct = printfulProducts.find((p) =>
+            String(p.name || '').trim().toLowerCase() ===
+            String(product.title || '').trim().toLowerCase()
+          );
+
+          console.log('[MATCHED PRINTFUL PRODUCT]', printfulProduct);
+          console.log('[MATCHED PRINTFUL VARIANTS]', printfulProduct?.sync_variants);
         }
       } catch (err) {
         console.warn('Could not fetch Printful product details:', err);
       }
+
 	return {
 		id: product.id,
 		title: product.title,

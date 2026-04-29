@@ -327,13 +327,15 @@ if (!token) {
       fallbackImages[0];
 
     const cartItem = {
-      id: `${product.id}-${selectedVariant.id || selectedVariant.variant_id}`,
+      id: `${product.id}-${selectedVariant?.id || selectedVariant?.variant_id || selectedVariant?.sync_variant_id || selectedVariant?.syncVariantId}`,
       productId: product.id,
 
       // Printful order needs this
       sync_variant_id:
         selectedVariant?.sync_variant_id ||
         selectedVariant?.syncVariantId ||
+        selectedVariant?.variant_id ||
+        selectedVariant?.id ||
         null,
 
       // Keep these for frontend compatibility

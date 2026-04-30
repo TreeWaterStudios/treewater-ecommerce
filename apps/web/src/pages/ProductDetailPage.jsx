@@ -172,7 +172,8 @@ export default function ProductDetailPage() {
             setProduct((prev) => ({
               ...(prev || {}),
               ...(data || {}),
-              variants: data?.sync_variants || data?.variants || prev?.variants || [],
+              variants: data?.variants || data?.sync_variants || [],
+              sync_variants: data?.sync_variants || data?.variants || [],
             }));
           } else {
             setNotFound(true);
@@ -292,13 +293,17 @@ if (!token) {
 
     if (!v) return null;
 
+    const syncVariantId = Number(
+      v?.sync_variant_id ||
+      v?.syncVariantId ||
+      v?.variant_id
+    );
+
     return {
       ...v,
-      sync_variant_id: Number(
-        v?.sync_variant_id ||
-        v?.syncVariantId ||
-        v?.id
-     ),
+      sync_variant_id: syncVariantId,
+      id: String(syncVariantId),
+      variant_id: String(syncVariantId),
     };
   }, [selectedColor, selectedSize, normalizedVariants]);
 

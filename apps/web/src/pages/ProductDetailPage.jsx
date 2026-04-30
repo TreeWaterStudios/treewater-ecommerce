@@ -288,7 +288,18 @@ if (!token) {
   };
 
   const selectedVariant = useMemo(() => {
-    return findVariant(selectedColor, selectedSize);
+    const v = findVariant(selectedColor, selectedSize);
+
+    if (!v) return null;
+
+    return {
+      ...v,
+      sync_variant_id: Number(
+        v?.sync_variant_id ||
+        v?.syncVariantId ||
+        v?.id
+     ),
+    };
   }, [selectedColor, selectedSize, normalizedVariants]);
 
   const isSelectionComplete = useMemo(() => {
@@ -324,22 +335,14 @@ if (!token) {
       product.thumbnail_url ||
       product.thumbnail ||
       product.image ||
-      fallbackImages[0];
-
-    const realVariant = product.sync_variants?.find(
-      v =>
-        v.id === selectedVariant?.id ||
-        v.variant_id === selectedVariant?.variant_id ||
-        v.name === selectedVariant?.title
-    );
+      fallbackImages[0];   
 
     const cartItem = {
       id: `${product.id}-${selectedVariant?.id || selectedVariant?.variant_id || selectedVariant?.sync_variant_id || selectedVariant?.syncVariantId}`,
       productId: product.id,
 
       // Printful order needs this
-      sync_variant_id:
-        selectedVariant?.sync_variant_id || null,
+      sync_variant_id: Number(selectedVariant?.sync_variant_id),
 
       // Keep these for frontend compatibility
       variant_id: selectedVariant.variant_id,

@@ -1,7 +1,8 @@
+const API_BASE = "/hcgi/api";
 const ECOMMERCE_API_URL = "https://api-ecommerce.hostinger.com";
 const ECOMMERCE_STORE_ID = "store_01KMCJKPFCA2CXS4AH4CF8QMFE";
 const API_BASE = "https://treewater-ecommerce.onrender.com";
-const API_BASE = "/hcgi/api";
+
 
 export const formatCurrency = (priceInCents, currencyInfo) => {
 	if (!currencyInfo || priceInCents === null || priceInCents === undefined) {

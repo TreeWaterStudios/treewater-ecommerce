@@ -342,16 +342,25 @@ if (!token) {
       product.image ||
       fallbackImages[0];   
 
-    const cartItem = {
-      id: `${product.id}-${selectedVariant?.id || selectedVariant?.variant_id || selectedVariant?.sync_variant_id || selectedVariant?.syncVariantId}`,
-      productId: product.id,
+  const syncVariantId =
+    selectedVariant?.sync_variant_id ||
+    selectedVariant?.syncVariantId ||
+    selectedVariant?.id;
 
-      // Printful order needs this
-      sync_variant_id: Number(selectedVariant?.sync_variant_id),
+  const printfulVariantId =
+    selectedVariant?.variant_id ||
+    selectedVariant?.variantId;
 
-      // Keep these for frontend compatibility
-      variant_id: selectedVariant.variant_id,
-      variantId: selectedVariant.variant_id,
+  const cartItem = {
+    id: `${product.id}-${syncVariantId}`,
+    productId: product.id,
+
+    // Printful order needs this
+    sync_variant_id: Number(syncVariantId),
+
+    // Keep these for frontend compatibility
+    variant_id: printfulVariantId,
+    variantId: printfulVariantId,
 
       name: product.name,
       price: finalPrice,

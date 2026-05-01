@@ -239,12 +239,31 @@ export async function getProductById(productId) {
     throw new Error(`No product data returned for ID ${productId}`);
   }
 
-  // Return clean product object
   return {
     id: product.id,
     name: product.title,
     thumbnail_url: product.thumbnail_url || null,
-    sync_variants: product.sync_variants || [],
+
+    sync_variants: (product.sync_variants || []).map((variant) => ({
+      id: Number(variant.id),
+      sync_variant_id: Number(variant.id),
+      variant_id: Number(variant.variant_id),
+
+      name: variant.name,
+      synced: variant.synced,
+
+      retail_price: variant.retail_price,
+      currency: variant.currency,
+
+      size: variant.size,
+      color: variant.color,
+
+      product: variant.product,
+
+      files: variant.files || [],
+      options: variant.options || [],
+    })),
+
     sync_status: product.sync_status || null,
   };
 }

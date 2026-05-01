@@ -37,7 +37,9 @@ function normalizeVariants(product) {
 
   if (!Array.isArray(rawVariants)) return [];
 
-  return rawVariants.map((variant, index) => {
+  return rawVariants
+    .filter((variant) => Number.isFinite(Number(variant?.sync_variant_id || variant?.id)))
+    .map((variant, index) => {
     const name = variant?.name || variant?.title || '';
     const color =
       variant?.color ||
@@ -77,8 +79,8 @@ function normalizeVariants(product) {
           ? Number(variant.sync_variant_id)
           : Number.isFinite(Number(variant?.sync_variant?.id))
             ? Number(variant.sync_variant.id)
-            : Number.isFinite(Number(variant?.external_id))
-              ? Number(variant.external_id)
+            : Number.isFinite(Number(variant?.id))
+              ? Number(variant.id)
               : null,
 
       // keep UI compatibility

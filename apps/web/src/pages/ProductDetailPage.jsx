@@ -293,18 +293,25 @@ if (!token) {
 
     if (!v) return null;
 
-    const syncVariantId = Number(
+    const rawSyncVariantId =
       v?.sync_variant_id ||
       v?.syncVariantId ||
-      v?.variant_id
-    );
+      v?.id;
+
+    const syncVariantId = Number(rawSyncVariantId);
+
+    if (!Number.isFinite(syncVariantId) || syncVariantId <= 0) {
+      console.error('[BAD PRINTFUL VARIANT]', v);
+      return null;
+    }
 
     return {
       ...v,
       sync_variant_id: syncVariantId,
       id: String(syncVariantId),
-      variant_id: String(syncVariantId),
+      variant_id: v?.variant_id,
     };
+
   }, [selectedColor, selectedSize, normalizedVariants]);
 
   const isSelectionComplete = useMemo(() => {
@@ -327,7 +334,10 @@ if (!token) {
   };
 
   const handleAddToCart = () => {
-    if (!product || !selectedVariant) return;
+    if (!product || !selectedVariant || !Number.isFinite(Number(selectedVariant.sync_variant_id))) {
+      console.error('[ADD TO CART BLOCKED - BAD VARIANT]', selectedVariant);
+      return;
+    }
 
     const finalPrice =
       Number(selectedVariant?.price || 0) > 0
@@ -340,27 +350,27 @@ if (!token) {
       product.thumbnail_url ||
       product.thumbnail ||
       product.image ||
-      fallbackImages[0];   
+      fallbackImages[0];
 
-  const syncVariantId =
-    selectedVariant?.sync_variant_id ||
-    selectedVariant?.syncVariantId ||
-    selectedVariant?.id;
+    const syncVariantId =
+      selectedVariant?.sync_variant_id ||
+      selectedVariant?.syncVariantId ||
+      selectedVariant?.id;
 
-  const printfulVariantId =
-    selectedVariant?.variant_id ||
-    selectedVariant?.variantId;
+    const printfulVariantId =
+      selectedVariant?.variant_id ||
+      selectedVariant?.variantId;
 
-  const cartItem = {
-    id: `${product.id}-${syncVariantId}`,
-    productId: product.id,
+    const cartItem = {
+      id: `${product.id}-${syncVariantId}`,
+      productId: product.id,
 
-    // Printful order needs this
-    sync_variant_id: Number(syncVariantId),
+      // Printful order needs this
+      sync_variant_id: Number(syncVariantId),
 
-    // Keep these for frontend compatibility
-    variant_id: printfulVariantId,
-    variantId: printfulVariantId,
+      // Keep these for frontend compatibility
+      variant_id: printfulVariantId,
+      variantId: printfulVariantId,
 
       name: product.name,
       price: finalPrice,

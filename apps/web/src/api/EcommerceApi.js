@@ -1,8 +1,6 @@
-const API_BASE = "/hcgi/api";
 const ECOMMERCE_API_URL = "https://api-ecommerce.hostinger.com";
 const ECOMMERCE_STORE_ID = "store_01KMCJKPFCA2CXS4AH4CF8QMFE";
 const API_BASE = "https://treewater-ecommerce.onrender.com";
-
 
 export const formatCurrency = (priceInCents, currencyInfo) => {
 	if (!currencyInfo || priceInCents === null || priceInCents === undefined) {
@@ -133,7 +131,6 @@ const getProductPrice = (product) => {
 	const currency = selectedVariant?.prices[0]?.currency_code || "eur";
 
 	// price_in_cents is the price value in cents, make sure to convert it to a full price based on decimal_digits
-        console.log('[GET PRODUCT FINAL VARIANTS]', printfulProduct?.sync_variants || extractVariants(product.variants));
 	return { price_in_cents, currency };
 };
 
@@ -450,6 +447,13 @@ export async function getProducts({ids, offset, limit, order, sort_by, is_hidden
  *   field: "sku"
  * });
  */
+        const normalizeProductName = (value = "") =>
+	    String(value)
+		.toLowerCase()
+		.replace(/\b0\b/g, "")
+		.replace(/[^a-z0-9]+/g, " ")
+		.trim();
+
 export async function getProduct(id, {field} = {}) {
 	const queryParams = new URLSearchParams();
 
@@ -478,21 +482,27 @@ export async function getProduct(id, {field} = {}) {
       let printfulProduct = null;
 
       try {
-        const printfulRes = await fetch(`${API_BASE}/printful/products`);
+	  const printfulRes = await fetch(`${API_BASE}/printful/products`);
 
-        if (printfulRes.ok) {
-          const printfulProducts = await printfulRes.json();
+	  if (printfulRes.ok) {
+	      const printfulProducts = await printfulRes.json();
+       	      const hostingerName = normalizeProductName(product.title);
 
-          printfulProduct = printfulProducts.find((p) =>
-            String(p.name || '').trim().toLowerCase() ===
-            String(product.title || '').trim().toLowerCase()
-          );
+	      printfulProduct = printfulProducts.find((p) => {
+		  const printfulName = normalizeProductName(p.name);
+		  return (
+		      printfulName === hostingerName ||
+		      printfulName.includes(hostingerName) ||
+		      hostingerName.includes(printfulName)
+		  );
+	      });
 
-          console.log('[MATCHED PRINTFUL PRODUCT]', printfulProduct);
-          console.log('[MATCHED PRINTFUL VARIANTS]', printfulProduct?.sync_variants);
-        }
+	      console.log('[HOSTINGER PRODUCT TITLE]', product.title);
+	      console.log('[MATCHED PRINTFUL PRODUCT]', printfulProduct);
+	      console.log('[MATCHED PRINTFUL VARIANTS]', printfulProduct?.sync_variants);
+	  }
       } catch (err) {
-        console.warn('Could not fetch Printful product details:', err);
+	  console.warn('Could not fetch Printful product details:', err);
       }
 
 	return {
@@ -511,7 +521,9 @@ export async function getProduct(id, {field} = {}) {
 		images: extractImages(product.media),
 		options: extractProductOptions(product.options),
 		sync_variants: printfulProduct?.sync_variants || [],
-                variants: printfulProduct?.sync_variants || extractVariants(product.variants),
+		variants: printfulProduct?.sync_variants?.length
+		    ? printfulProduct.sync_variants
+		    : extractVariants(product.variants),
 		collections: extractCollections(product.product_collections),
 		additional_info: extractAdditionalInfo(product.additional_info),
 		type: {

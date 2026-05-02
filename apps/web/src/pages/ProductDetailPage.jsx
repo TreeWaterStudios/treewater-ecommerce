@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
 import { getProduct } from '@/api/EcommerceApi.js';
+import { fetchProducts as fetchPrintfulProducts } from '@/api/printfulApi.js';
 import { getMockupsForProduct } from '@/api/mockupApi.js';
 import { getAdminToken } from '@/api/adminApi.js';
 import { clearAdminSession } from '@/api/adminApi.js';
@@ -25,6 +26,14 @@ const SIZE_ORDER = ['2XS', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'
 function extractSize(value = '') {
   const match = String(value).toUpperCase().match(/\b(2XS|XS|S|M|L|XL|2XL|3XL|4XL|5XL)\b/);
   return match ? match[1] : '';
+}
+
+function normalizeProductName(value = '') {
+  return String(value)
+    .toLowerCase()
+    .replace(/\b0\b/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
 function normalizeVariants(product) {
@@ -161,34 +170,95 @@ export default function ProductDetailPage() {
     loadMockups();
   }, [product?.id]);
 
-  useEffect(() => {
-    if (productId) {
+    useEffect(() => {
+    let isMounted = true;
+
+    const loadProduct = async () => {
+      if (!productId) return;
+
       setLoading(true);
       setNotFound(false);
-      
-      getProduct(productId)
-        .then((data) => {
-          if (data) {
-            setProduct((prev) => ({
-              ...(prev || {}),
-              ...(data || {}),
-              variants: data?.variants || data?.sync_variants || [],
-              sync_variants: data?.sync_variants || data?.variants || [],
-            }));
-          } else {
+
+      try {
+        const data = await getProduct(productId);
+
+        if (!data) {
+          if (isMounted) {
             setNotFound(true);
             setProduct(null);
           }
-        })
-        .catch((err) => {
-          console.error('❌ [ProductDetailPage] Error fetching product:', err);
+          return;
+        }
+
+        let printfulVariants = [];
+
+        try {
+          const printfulResponse = await fetchPrintfulProducts();
+
+          const printfulProducts = Array.isArray(printfulResponse)
+            ? printfulResponse
+            : printfulResponse?.products || [];
+
+          const hostingerName = normalizeProductName(data.name || data.title);
+
+          const matchedPrintfulProduct = printfulProducts.find((p) => {
+            const printfulName = normalizeProductName(p.name || p.title);
+
+            return (
+              printfulName === hostingerName ||
+              printfulName.includes(hostingerName) ||
+              hostingerName.includes(printfulName)
+            );
+          });
+
+          printfulVariants = matchedPrintfulProduct?.sync_variants || [];
+
+          console.log('[PRODUCT DETAIL HOSTINGER NAME]', data.name || data.title);
+          console.log('[PRODUCT DETAIL MATCHED PRINTFUL PRODUCT]', matchedPrintfulProduct);
+          console.log('[PRODUCT DETAIL PRINTFUL VARIANTS]', printfulVariants);
+        } catch (err) {
+          console.warn('[PRODUCT DETAIL] Could not load Printful variants:', err);
+        }
+
+        const mergedProduct = {
+          ...(data || {}),
+          name: data.name || data.title,
+          title: data.title || data.name,
+
+          variants: printfulVariants.length
+            ? printfulVariants
+            : data?.variants || data?.sync_variants || [],
+
+          sync_variants: printfulVariants.length
+            ? printfulVariants
+            : data?.sync_variants || data?.variants || [],
+        };
+
+        if (isMounted) {
+          setProduct((prev) => ({
+            ...(prev || {}),
+            ...mergedProduct,
+          }));
+        }
+      } catch (err) {
+        console.error('❌ [ProductDetailPage] Error fetching product:', err);
+
+        if (isMounted) {
           setNotFound(true);
           setProduct(null);
-        })
-        .finally(() => {
+        }
+      } finally {
+        if (isMounted) {
           setLoading(false);
-        });
-    }
+        }
+      }
+    };
+
+    loadProduct();
+
+    return () => {
+      isMounted = false;
+    };
   }, [productId]);
 
   const handleFileSelect = async (e) => {
@@ -321,7 +391,7 @@ if (!token) {
     if (needsColor && !selectedColor) return false;
     if (needsSize && !selectedSize) return false;
 
-    return !!selectedVariant;
+    return true;
   }, [availableColors, availableSizes, selectedColor, selectedSize, selectedVariant]);
 
   const handleQuantityChange = (amount) => {

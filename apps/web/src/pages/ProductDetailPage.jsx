@@ -137,8 +137,8 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(!location.state?.product);
   const [notFound, setNotFound] = useState(false);
 
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   
   const [images, setImages] = useState([]);

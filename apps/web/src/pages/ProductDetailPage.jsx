@@ -385,14 +385,8 @@ if (!token) {
   }, [selectedColor, selectedSize, normalizedVariants]);
 
   const isSelectionComplete = useMemo(() => {
-    const needsColor = availableColors.length > 0;
-    const needsSize = availableSizes.length > 0;
-
-    if (needsColor && !selectedColor) return false;
-    if (needsSize && !selectedSize) return false;
-
-    return true;
-  }, [availableColors, availableSizes, selectedColor, selectedSize, selectedVariant]);
+  return normalizedVariants.length > 0;
+}, [normalizedVariants]);
 
   const handleQuantityChange = (amount) => {
     setQuantity(prev => {
@@ -856,7 +850,7 @@ if (!token) {
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-7 text-lg rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none border-none"
               >
                 <ShoppingCart className="mr-2 h-6 w-6" /> 
-                {!isSelectionComplete ? 'Select options to add' : 'Add to Cart'}
+                {!isSelectionComplete ? 'Loading options...' : 'Add to Cart'}
               </Button>
               
               {selectedVariant && selectedVariant.in_stock === false && (

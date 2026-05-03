@@ -179,6 +179,15 @@ router.post('/create-checkout', async (req, res, next) => {
       quantity: Number(item.quantity),
     }));
 
+    logger.info(
+      `[STRIPE MODE CHECK] STRIPE_SECRET_KEY prefix: ${process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')    
+        ? 'LIVE'
+        : process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')
+          ? 'TEST'
+          : 'UNKNOWN'
+      }`
+    );
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],

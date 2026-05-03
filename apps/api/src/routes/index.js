@@ -16,6 +16,6 @@ export default () => {
   router.use('/stripe', stripeRouter);
   router.use('/checkout', checkoutRouter);
   router.use('/', uploadRouter);
-  router.use('/', mockupsRouter);
-  return router;
+  router.use('/', uploadRouter);
+  // router.use('/', mockupsRouter);
 };

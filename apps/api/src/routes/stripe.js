@@ -188,6 +188,19 @@ router.post('/create-checkout', async (req, res, next) => {
       }`
     );
 
+    logger.info(
+      `[STRIPE MODE CHECK] key mode: ${process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')
+        ? 'LIVE'
+        : process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')
+          ? 'TEST'
+          : process.env.STRIPE_SECRET_KEY?.startsWith('rk_live_')
+            ? 'RESTRICTED_LIVE'
+            : process.env.STRIPE_SECRET_KEY?.startsWith('rk_test_')
+              ? 'RESTRICTED_TEST'
+              : 'UNKNOWN'
+      }`
+    );
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -199,7 +212,15 @@ router.post('/create-checkout', async (req, res, next) => {
       metadata,
     });
 
-    logger.info(`Stripe Checkout Session created: ${session.id}`);
+    logger.info(
+  `[STRIPE SESSION CHECK] created session: ${session.id}, url mode: ${
+    session.url?.includes('cs_live_') || session.id?.startsWith('cs_live_')
+      ? 'LIVE'
+      : session.url?.includes('cs_test_') || session.id?.startsWith('cs_test_')
+        ? 'TEST'
+        : 'UNKNOWN'
+  }`
+);
 
     res.json({
       url: session.url,

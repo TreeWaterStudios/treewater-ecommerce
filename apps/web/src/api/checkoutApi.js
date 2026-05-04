@@ -7,6 +7,9 @@ export async function createStripeCheckoutSession({
   successUrl,
   cancelUrl,
 }) {
+
+console.log('[CHECKOUT API BASE]', API_BASE, `${API_BASE}/stripe/create-checkout`);
+
   const response = await fetch(`${API_BASE}/stripe/create-checkout`, {
     method: 'POST',
     headers: {
@@ -40,4 +43,3 @@ export async function getStripeSession(sessionId) {
 
   return data;
 }
-EOF

@@ -1,5 +1,5 @@
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'https://treewater-api.onrender.com';
+  import.meta.env.VITE_API_BASE_URL || 'https://treewater-ecommerce.onrender.com';
 
 export async function createStripeCheckoutSession({
   cartItems,
@@ -40,15 +40,4 @@ export async function getStripeSession(sessionId) {
 
   return data;
 }
-
-export async function getStripeSession(sessionId) {
-  const response = await fetch(`${API_BASE}/checkout/session/${sessionId}`);
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to fetch Stripe session');
-  }
-
-  return data;
-}
+EOF

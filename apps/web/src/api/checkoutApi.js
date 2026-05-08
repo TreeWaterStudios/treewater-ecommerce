@@ -1,5 +1,4 @@
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'https://treewater-ecommerce.onrender.com';
+const API_BASE = 'https://treewater-ecommerce.onrender.com';
 
 export async function createStripeCheckoutSession({
   cartItems,

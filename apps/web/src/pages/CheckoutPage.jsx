@@ -40,6 +40,7 @@ const CheckoutPage = () => {
     return cartItems.map((item) => ({
       id: item.id,
       productId: item.productId,
+      sync_variant_id: item.sync_variant_id ?? item.syncVariantId, 
       variant_id: item.variant_id || item.variantId,
       name: item.name,
       price: Number(item.price || 0),

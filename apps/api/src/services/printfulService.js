@@ -361,6 +361,18 @@ export async function createOrder(orderData) {
     }
 
     logger.info(`✅ Successfully created Printful order: ${order.id}`);
+
+    if (process.env.PRINTFUL_AUTO_CONFIRM === 'true') {
+      logger.info(`🚀 Auto-confirming Printful order: ${order.id}`);
+
+      const confirmResponse = await axiosInstance.post(`/orders/${order.id}/confirm`);
+      const confirmedOrder = confirmResponse.data?.result;
+
+      logger.info(`✅ Printful order confirmed for fulfillment: ${order.id}`);
+
+      return confirmedOrder || order;
+    }
+
     return order;
   } catch (error) {
     const apiMessage =

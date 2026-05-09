@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import axios from 'axios';
+import crypto from 'crypto';
 import logger from '../utils/logger.js';
 
 const PRINTFUL_API_URL = 'https://api.printful.com';
@@ -273,6 +274,17 @@ export async function getProductById(productId) {
  * @param {Object} orderData - Order data including cartItems, customerData, and payment info
  * @returns {Promise<Object>} Created order object from Printful
  */
+function buildPrintfulExternalId(checkoutSessionId) {
+  const source = checkoutSessionId || `order_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+  const hash = crypto
+    .createHash('sha256')
+    .update(String(source))
+    .digest('hex')
+    .slice(0, 24);
+
+  return `tw${hash}`;
+}
+
 export async function createOrder(orderData) {
   const {
     cartItems,
@@ -311,10 +323,9 @@ export async function createOrder(orderData) {
     };
   });
 
-  const externalId =
-    checkoutSessionId
-      ? `stripe_session_${checkoutSessionId}`
-      : `order_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+  const externalId = buildPrintfulExternalId(checkoutSessionId);
+
+  logger.info(`[PRINTFUL EXTERNAL ID] ${externalId}`);
 
   const orderPayload = {
     external_id: externalId,

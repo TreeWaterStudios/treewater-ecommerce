@@ -288,9 +288,16 @@ export async function createOrder(orderData) {
   const items = cartItems.map((item) => {
     const syncVariantId =
       item.sync_variant_id ||
-      item.syncVariantId ||
-      item.variant_id ||
-      item.variantId;
+      item.syncVariantId;
+
+    logger.info(`[PRINTFUL SYNC VARIANT CHECK] ${JSON.stringify({
+      name: item.name,
+      sync_variant_id: item.sync_variant_id,
+      syncVariantId: item.syncVariantId,
+      variant_id: item.variant_id,
+      variantId: item.variantId,
+      resolvedSyncVariantId: syncVariantId,
+    })}`);
 
     if (!syncVariantId || !Number.isFinite(Number(syncVariantId)) || Number(syncVariantId) <= 0) {
       logger.error(`[PRINTFUL ORDER ERROR] Missing sync_variant_id: ${JSON.stringify(item)}`);

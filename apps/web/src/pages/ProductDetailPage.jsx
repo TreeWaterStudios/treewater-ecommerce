@@ -418,8 +418,7 @@ if (!token) {
 
     const syncVariantId =
       selectedVariant?.sync_variant_id ||
-      selectedVariant?.syncVariantId ||
-      selectedVariant?.id;
+      selectedVariant?.syncVariantId;
 
     const printfulVariantId =
       selectedVariant?.variant_id ||
@@ -446,6 +445,15 @@ if (!token) {
         size: selectedVariant.size || selectedSize || ''
       }
     };
+
+    if (!cartItem.sync_variant_id || Number.isNaN(cartItem.sync_variant_id)) {
+       console.error('[CHECKOUT BLOCKED] Missing valid Printful sync_variant_id', {
+         selectedVariant,
+         cartItem,
+       });
+       alert('This product variant is missing its Printful sync variant ID. Checkout is blocked.');
+       return;
+    }
 
     console.log('[CART VARIANT CHECK]', selectedVariant);
     console.log('[CART ITEM CHECK]', cartItem);

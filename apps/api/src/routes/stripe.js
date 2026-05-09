@@ -28,11 +28,9 @@ function buildMetadata(cartItems = [], customerData = {}) {
   id: item.id || null,
 
   sync_variant_id:
-    item.sync_variant_id ||
-    item.syncVariantId ||
-    item.variant_id ||
-    item.variantId ||
-    null,
+  item.sync_variant_id ??
+  item.syncVariantId ??
+  null,
 
   variant_id: item.variant_id || item.variantId || null,
 
@@ -105,11 +103,21 @@ function validateCheckoutInput(cartItems, customerData, successUrl, cancelUrl) {
   }
 
   for (const item of cartItems) {
-    const syncVariantId =
-      item.sync_variant_id ||
-      item.syncVariantId ||
-      item.variant_id ||
-      item.variantId;
+const syncVariantId =
+  item.sync_variant_id ??
+  item.syncVariantId;
+
+const variantId =
+  item.variant_id ??
+  item.variantId;
+
+if (!syncVariantId || !Number.isFinite(Number(syncVariantId)) || Number(syncVariantId) <= 0) {
+  throw new Error('Each cart item must include a valid sync_variant_id');
+}
+
+if (variantId && Number(syncVariantId) === Number(variantId)) {
+  throw new Error('sync_variant_id cannot equal variant_id');
+}
 
     if (!syncVariantId) {
       throw new Error('Each cart item must include sync_variant_id');
@@ -150,6 +158,14 @@ router.post('/create-checkout', async (req, res, next) => {
   try {
     const { cartItems, customerData, successUrl, cancelUrl } = req.body;
 
+    logger.info(`[CREATE CHECKOUT CART DEBUG] ${JSON.stringify(cartItems.map((item) => ({
+      name: item.name,
+      sync_variant_id: item.sync_variant_id,
+      syncVariantId: item.syncVariantId,
+      variant_id: item.variant_id,
+      variantId: item.variantId,
+    })))}`);
+
     validateCheckoutInput(cartItems, customerData, successUrl, cancelUrl);
 
     const metadata = buildMetadata(cartItems, customerData);
@@ -165,10 +181,8 @@ router.post('/create-checkout', async (req, res, next) => {
               : [],
           metadata: {
             sync_variant_id: String(
-              item.sync_variant_id ||
-              item.syncVariantId ||
-              item.variant_id ||
-              item.variantId
+              item.sync_variant_id ??
+              item.syncVariantId
             ),
             color: item.selectedOptions?.color || item.color || '',
             size: item.selectedOptions?.size || item.size || '',
@@ -180,7 +194,7 @@ router.post('/create-checkout', async (req, res, next) => {
     }));
 
     logger.info(
-      `[STRIPE MODE CHECK] STRIPE_SECRET_KEY prefix: ${process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')    
+      `[STRIPE MODE CHECK] STRIPE_SECRET_KEY prefix: ${process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')
         ? 'LIVE'
         : process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')
           ? 'TEST'
@@ -213,14 +227,13 @@ router.post('/create-checkout', async (req, res, next) => {
     });
 
     logger.info(
-  `[STRIPE SESSION CHECK] created session: ${session.id}, url mode: ${
-    session.url?.includes('cs_live_') || session.id?.startsWith('cs_live_')
-      ? 'LIVE'
-      : session.url?.includes('cs_test_') || session.id?.startsWith('cs_test_')
-        ? 'TEST'
-        : 'UNKNOWN'
-  }`
-);
+      `[STRIPE SESSION CHECK] created session: ${session.id}, url mode: ${session.url?.includes('cs_live_') || session.id?.startsWith('cs_live_')
+        ? 'LIVE'
+        : session.url?.includes('cs_test_') || session.id?.startsWith('cs_test_')
+          ? 'TEST'
+          : 'UNKNOWN'
+      }`
+    );
 
     res.json({
       url: session.url,

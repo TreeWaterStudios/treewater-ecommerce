@@ -166,4 +166,36 @@ router.post('/products/:productId/mockups', requireAdminAuth, upload.single('fil
   }
 });
 
+/**
+ * DELETE /products/:productId/mockups/:mockupId
+ * Admin only
+ */
+router.delete('/products/:productId/mockups/:mockupId', requireAdminAuth, async (req, res, next) => {
+  try {
+    const { productId, mockupId } = req.params;
+    const pb = getPocketBaseClient();
+
+    if (!productId || typeof productId !== 'string') {
+      return res.status(400).json({ error: 'Product ID is required and must be a string' });
+    }
+
+    if (!mockupId || typeof mockupId !== 'string') {
+      return res.status(400).json({ error: 'Mockup ID is required and must be a string' });
+    }
+
+    logger.info(`[MOCKUP DELETE] Admin ${req.admin?.email || req.admin?.id || 'unknown'} deleting mockup ${mockupId} for product ${productId}`);
+
+    await pb.collection('mockups').delete(mockupId);
+
+    logger.info(`[MOCKUP DELETE] ✅ Mockup deleted: ${mockupId}`);
+
+    res.json({
+      success: true,
+      deletedId: mockupId,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

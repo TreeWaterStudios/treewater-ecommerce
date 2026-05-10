@@ -133,15 +133,16 @@ export default function ProductDetailPage() {
 
   const { addToCart } = useCart();
 
-  const [product, setProduct] = useState(stateProduct);
-  const [loading, setLoading] = useState(!location.state?.product);
-  const [notFound, setNotFound] = useState(false);
-
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   
   const [images, setImages] = useState([]);
+  const [mockupRecords, setMockupRecords] = useState([]);
   const [mainImage, setMainImage] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -152,6 +153,7 @@ export default function ProductDetailPage() {
       try {
         const mockups = await getMockupsForProduct(product.id);
         const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
+        setMockupRecords(mockups);
 
         if (urls.length > 0) {
           setImages(urls);
@@ -163,6 +165,7 @@ export default function ProductDetailPage() {
       } catch (error) {
         console.error('[MOCKUPS] Failed to load mockups:', error);
         setImages([]);
+        setMockupRecords([]);
         setMainImage(null);
       }
     };
@@ -300,6 +303,7 @@ if (!token) {
       const mockups = await getMockupsForProduct(product.id);
       const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
+      setMockupRecords(mockups);
       setImages(urls);
       setMainImage(urls[0] || null);
 
@@ -447,12 +451,12 @@ if (!token) {
     };
 
     if (!cartItem.sync_variant_id || Number.isNaN(cartItem.sync_variant_id)) {
-       console.error('[CHECKOUT BLOCKED] Missing valid Printful sync_variant_id', {
-         selectedVariant,
-         cartItem,
-       });
-       alert('This product variant is missing its Printful sync variant ID. Checkout is blocked.');
-       return;
+      console.error('[CHECKOUT BLOCKED] Missing valid Printful sync_variant_id', {
+        selectedVariant,
+        cartItem,
+      });
+      alert('This product variant is missing its Printful sync variant ID. Checkout is blocked.');
+      return;
     }
 
     console.log('[CART VARIANT CHECK]', selectedVariant);
@@ -466,6 +470,45 @@ if (!token) {
     });
 
     setQuantity(1);
+  };
+
+  const handleDeleteMockup = async (mockupId) => {
+    if (!isAdmin || !product?.id || !mockupId) return;
+
+    if (!window.confirm('Remove this mockup?')) return;
+
+    try {
+      const token = getAdminToken();
+
+      if (!token) {
+        throw new Error('No admin token found');
+      }
+
+      const res = await fetch(`https://treewater-ecommerce.onrender.com/products/${product.id}/mockups/${mockupId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to remove mockup');
+      }
+
+      const mockups = await getMockupsForProduct(product.id);
+      const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
+
+      setMockupRecords(mockups);
+      setImages(urls);
+      setMainImage(urls[0] || null);
+
+      toast.success('Mockup removed');
+    } catch (err) {
+      console.error('[MOCKUP DELETE FAILED]', err);
+      toast.error('Remove failed', { description: err.message || 'Could not remove mockup.' });
+    }
   };
 
   const handleDragEnter = (e) => {
@@ -540,6 +583,7 @@ if (!token) {
       const mockups = await getMockupsForProduct(product.id);
       const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
+      setMockupRecords(mockups);
       setImages(urls);
       setMainImage(urls[0] || null);
 
@@ -711,25 +755,40 @@ if (!token) {
             {images && images.length > 0 ? (
               <div className="flex flex-col gap-3">
                 <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
-                  {images.map((imgUrl, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setMainImage(imgUrl || fallbackImages[0])}
-                      className={`relative flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all group bg-black/40 ${
-                        mainImage === imgUrl ? 'border-blue-400 ring-2 ring-blue-300' : 'border-white/10 hover:border-blue-400/80'
-                      }`}
-                    >
-                      <img 
-                        src={imgUrl || fallbackImages[0]} 
-                        alt={`View ${idx + 1}`} 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = fallbackImages[0];
-                          e.target.onerror = null;
-                        }}
-                      />
-                    </button>
-                  ))}
+                  {images.map((imgUrl, idx) => {
+                    const mockupId = mockupRecords[idx]?.id;
+
+                    return (
+                      <div key={mockupId || idx} className="flex-shrink-0 flex flex-col items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setMainImage(imgUrl || fallbackImages[0])}
+                          className={`relative w-24 h-24 rounded-xl overflow-hidden border-2 transition-all group bg-black/40 ${mainImage === imgUrl ? 'border-blue-400 ring-2 ring-blue-300' : 'border-white/10 hover:border-blue-400/80'
+                            }`}
+                        >
+                          <img
+                            src={imgUrl || fallbackImages[0]}
+                            alt={`View ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.src = fallbackImages[0];
+                              e.target.onerror = null;
+                            }}
+                          />
+                        </button>
+
+                        {isAdmin && mockupId && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMockup(mockupId)}
+                            className="text-xs text-red-400 hover:text-red-300 underline"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : (

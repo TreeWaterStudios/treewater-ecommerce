@@ -15,7 +15,6 @@ import MerchandiseStore from './pages/MerchandiseStore.jsx';
 import AdminMerchandiseManager from './pages/AdminMerchandiseManager.jsx';
 import MockupAdmin from './pages/MockupAdmin.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
-import PlayStorePage from './pages/PlayStorePage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import ContactPage from './pages/ContactPage.jsx';
 import FAQPage from './pages/FAQPage.jsx';
@@ -43,7 +42,6 @@ function App() {
             <Route path="/success" element={<SuccessPage />} />
             <Route path="/checkout-success" element={<SuccessPage />} />
             <Route path="/order-confirmation" element={<OrderConfirmation />} />
-            <Route path="/play-store" element={<PlayStorePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/faq" element={<FAQPage />} />

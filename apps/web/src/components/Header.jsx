@@ -28,7 +28,6 @@ const Header = () => {
     { name: 'Home', path: '/' },
     { name: 'Beat Leasing', path: '/beat-leasing' },
     { name: 'Merchandise', path: '/merchandise' },
-    { name: 'Play Store', path: '/play-store' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
     { name: 'FAQ', path: '/faq' },

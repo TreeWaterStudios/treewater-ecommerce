@@ -25,9 +25,6 @@ const Footer = () => {
               <Link to="/merchandise" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                 Merchandise
               </Link>
-              <Link to="/play-store" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                Play Store
-              </Link>
               <Link to="/contact" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                 Contact
               </Link>

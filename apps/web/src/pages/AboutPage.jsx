@@ -20,7 +20,7 @@ const AboutPage = () => {
             backgroundImage: 'url(https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/aa180b400f27cb818b5b6d96ea23f644.png)',
           }}
         >
-          <div className="absolute inset-0 bg-black/75"></div>
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
 
         {/* Content Layer */}
@@ -92,9 +92,9 @@ const AboutPage = () => {
                     </p>
                   </div>
                   <div className="bg-card/60 backdrop-blur-md border border-accent/20 rounded-xl p-6 hover:shadow-[0_0_15px_rgba(0,255,100,0.1)] transition-all duration-300">
-                    <h3 className="text-xl font-semibold mb-2 text-accent">Play Store</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-accent">BeatStars Player</h3>
                     <p className="text-gray-300">
-                      Browse our extensive catalog of beats across multiple genres, all available for instant purchase
+                      Preview, license, and purchase beats through our official embedded BeatStars player
                     </p>
                   </div>
                 </div>

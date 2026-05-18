@@ -67,7 +67,7 @@ const HomePage = () => {
             }}
           >
             {/* Dark semi-transparent overlay for text readability */}
-            <div className="absolute inset-0 bg-black/60"></div>
+            <div className="absolute inset-0 bg-black/50"></div>
             {/* Gradient to blend smoothly into the next section */}
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent"></div>
           </div>
@@ -104,11 +104,6 @@ const HomePage = () => {
               <Link to="/merchandise">
                 <Button size="lg" variant="outline" className="border-primary/50 hover:border-primary bg-background/20 backdrop-blur-sm text-white">
                   Shop Merchandise
-                </Button>
-              </Link>
-              <Link to="/play-store">
-                <Button size="lg" variant="outline" className="border-secondary/50 hover:border-secondary bg-background/20 backdrop-blur-sm text-white">
-                  Browse Play Store
                 </Button>
               </Link>
             </motion.div>
@@ -168,7 +163,7 @@ const HomePage = () => {
             )}
 
             <div className="text-center mt-12">
-              <Link to="/play-store">
+              <Link to="/beat-leasing">
                 <Button variant="outline" size="lg" className="border-primary/50 hover:border-primary bg-background/40 backdrop-blur-sm text-white">
                   View All Beats
                 </Button>

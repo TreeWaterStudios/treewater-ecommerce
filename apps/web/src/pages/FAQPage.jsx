@@ -27,7 +27,7 @@ const FAQPage = () => {
         'After purchase, you can immediately download your beat files and contract from your dashboard. Files are available for re-download anytime from your account.',
     },
     {
-      question: 'What is your return policy?',
+      question: 'What is your return & refund policy?',
       answer:
         'Due to the digital nature of our products, all sales are final. However, if you experience technical issues with your files, please contact support and we\'ll resolve it promptly.',
     },
@@ -39,13 +39,9 @@ const FAQPage = () => {
     {
       question: 'Can I purchase exclusive rights to a beat?',
       answer:
-        'Yes! Premium tier includes the option for exclusive rights. Contact us directly for exclusive licensing arrangements, which remove the beat from our store and grant you full ownership.',
+        'Exclusive rights may be available on select beats, but we reserve the right not to sell exclusive rights at this time. If you are interested in exclusive licensing, please contact us directly and we will review availability on a case-by-case basis.',
     },
-    {
-      question: 'Do you offer refunds on beat purchases?',
-      answer:
-        'We stand behind the quality of our beats. If you\'re not satisfied with your purchase, contact us within 48 hours and we\'ll work with you to find a solution.',
-    },
+    
   ];
 
   return (

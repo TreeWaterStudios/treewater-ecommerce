@@ -59,14 +59,14 @@ const AboutPage = () => {
                     </p>
                   </div>
                   <div className="bg-card/60 backdrop-blur-md rounded-xl p-6 border border-secondary/20 hover:border-secondary/50 transition-colors duration-300">
-                    <Droplet className="w-12 h-12 text-secondary mb-4 drop-shadow-[0_0_8px_rgba(200,100,255,0.5)]" />
+                    <Droplet className="w-12 h-12 text-primary mb-4 drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]" />
                     <h3 className="text-xl font-semibold mb-2 text-white">Creative Flow</h3>
                     <p className="text-sm text-gray-300">
                       We facilitate the natural flow of creativity from producer to artist
                     </p>
                   </div>
                   <div className="bg-card/60 backdrop-blur-md rounded-xl p-6 border border-accent/20 hover:border-accent/50 transition-colors duration-300">
-                    <TreePine className="w-12 h-12 text-accent mb-4 drop-shadow-[0_0_8px_rgba(0,255,100,0.5)]" />
+                    <TreePine className="w-12 h-12 text-primary mb-4 drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]" />
                     <h3 className="text-xl font-semibold mb-2 text-white">Growth Together</h3>
                     <p className="text-sm text-gray-300">
                       Building a community where artists and producers grow side by side
@@ -86,13 +86,13 @@ const AboutPage = () => {
                     </p>
                   </div>
                   <div className="bg-card/60 backdrop-blur-md border border-secondary/20 rounded-xl p-6 hover:shadow-[0_0_15px_rgba(200,100,255,0.1)] transition-all duration-300">
-                    <h3 className="text-xl font-semibold mb-2 text-secondary">Exclusive Merchandise</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-primary">Exclusive Merchandise</h3>
                     <p className="text-gray-300">
                       Represent the TREEWATER brand with our carefully designed apparel and accessories
                     </p>
                   </div>
                   <div className="bg-card/60 backdrop-blur-md border border-accent/20 rounded-xl p-6 hover:shadow-[0_0_15px_rgba(0,255,100,0.1)] transition-all duration-300">
-                    <h3 className="text-xl font-semibold mb-2 text-accent">BeatStars Player</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-primary">BeatStars Player</h3>
                     <p className="text-gray-300">
                       Preview, license, and purchase beats through our official embedded BeatStars player
                     </p>

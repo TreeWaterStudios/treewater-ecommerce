@@ -1,35 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Play, Zap, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
-import pb from '@/lib/pocketbaseClient';
 import { motion } from 'framer-motion';
 
 const HomePage = () => {
-  const [featuredBeats, setFeaturedBeats] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBeats = async () => {
-      try {
-        const records = await pb.collection('beats').getList(1, 3, {
-          sort: '-created',
-          $autoCancel: false,
-        });
-        setFeaturedBeats(records.items);
-      } catch (error) {
-        console.error('Failed to fetch beats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBeats();
-  }, []);
 
   const features = [
     {
@@ -61,9 +40,10 @@ const HomePage = () => {
 
         <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden">
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat md:bg-fixed"
+            className="absolute inset-0 bg-contain bg-center bg-no-repeat md:bg-cover md:bg-center md:bg-fixed"
             style={{
               backgroundImage: 'url(https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/40253a724b9b6ff595bd07dd6d28aa8a.jpg)',
+              backgroundColor: '#020607',
             }}
           >
             {/* Dark semi-transparent overlay for text readability */}
@@ -72,7 +52,7 @@ const HomePage = () => {
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent"></div>
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center -translate-y-28 md:translate-y-0">
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -94,7 +74,7 @@ const HomePage = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              className="flex flex-col sm:flex-row gap-4 justify-center mt-56 md:mt-0"
             >
               <Link to="/beat-leasing">
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 animate-glowPulse">
@@ -110,65 +90,57 @@ const HomePage = () => {
           </div>
         </section>
 
-        <section className="relative py-20 overflow-hidden">
+        <section className="relative -mt-56 pt-56 pb-20 md:mt-0 md:py-20 overflow-hidden">
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat md:bg-fixed"
+            className="absolute inset-0 bg-cover bg-[position:center_70%] bg-no-repeat md:bg-center md:bg-fixed"
             style={{
               backgroundImage: 'url(https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/2c5c78f3c7e5d9f03c4bd5b0afb617f8.jpg)',
             }}
           >
-            <div className="absolute inset-0 bg-black/60"></div>
+            <div className="absolute inset-0 bg-black/15 md:bg-black/60"></div>
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent"></div>
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent"></div>
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-white drop-shadow-md">Featured Beats</h2>
-            
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="bg-muted/80 backdrop-blur-sm animate-pulse border-none">
-                    <CardContent className="p-6">
-                      <div className="h-40 bg-background/50 rounded mb-4"></div>
-                      <div className="h-6 bg-background/50 rounded mb-2"></div>
-                      <div className="h-4 bg-background/50 rounded w-2/3"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {featuredBeats.map((beat, index) => (
-                  <motion.div
-                    key={beat.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <Card className="bg-card/90 backdrop-blur-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 neon-border">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-center h-40 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mb-4">
-                          <Play className="w-16 h-16 text-primary" />
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2 text-white">{beat.name}</h3>
-                        <p className="text-sm text-gray-300 mb-2">{beat.artist}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-accent">{beat.genre}</span>
-                          <span className="text-lg font-bold text-primary">${beat.price}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white drop-shadow-md">
+                Featured Beats
+              </h2>
 
-            <div className="text-center mt-12">
-              <Link to="/beat-leasing">
-                <Button variant="outline" size="lg" className="border-primary/50 hover:border-primary bg-background/40 backdrop-blur-sm text-white">
-                  View All Beats
-                </Button>
-              </Link>
-            </div>
+              <Card className="bg-card/45 md:bg-card/90 backdrop-blur-md border-primary/30 neon-border p-8 md:p-10 max-w-3xl mx-auto">
+                <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border border-primary/40 mx-auto mb-6">
+                  <Play className="w-10 h-10 text-primary" />
+                </div>
+
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                  Stream the official BeatStars player
+                </h3>
+
+                <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
+                  Browse current TREEWATER beats, preview tagged tracks, compare lease options, and purchase securely through BeatStars.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to="/beat-leasing">
+                    <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                      View Beat Leasing
+                    </Button>
+                  </Link>
+
+                  <Link to="/contact">
+                    <Button size="lg" variant="outline" className="border-primary/50 hover:border-primary bg-background/40 backdrop-blur-sm text-white">
+                      Contact for Exclusive Rights
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            </motion.div>
           </div>
         </section>
 

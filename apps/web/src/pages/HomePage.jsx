@@ -40,7 +40,7 @@ const HomePage = () => {
 
         <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden">
           <div
-            className="absolute inset-0 bg-contain bg-center bg-no-repeat md:bg-cover md:bg-center md:bg-fixed"
+            className="absolute inset-0 bg-contain bg-center bg-no-repeat md:bg-contain md:bg-center md:bg-fixed"
             style={{
               backgroundImage: 'url(https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/40253a724b9b6ff595bd07dd6d28aa8a.jpg)',
               backgroundColor: '#020607',

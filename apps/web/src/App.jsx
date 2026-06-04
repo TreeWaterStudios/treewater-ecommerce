@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -22,6 +21,9 @@ import ProductDetailPage from './pages/ProductDetailPage.jsx';
 import SuccessPage from './pages/SuccessPage.jsx';
 import CartPage from './pages/CartPage.jsx';
 import OrderConfirmation from './pages/OrderConfirmation.jsx';
+import AdminLoginPage from './pages/AdminLoginPage.jsx';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
+import TermsOfServicePage from './pages/TermsOfServicePage.jsx';
 
 function App() {
   return (
@@ -34,6 +36,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/admin" element={<AdminLoginPage />} />
             <Route path="/beat-leasing" element={<BeatLeasingPage />} />
             <Route path="/merchandise" element={<MerchandiseStore />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
@@ -45,6 +48,8 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/faq" element={<FAQPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
             <Route path="/mockup-admin" element={<MockupAdmin />} />
             <Route
               path="/dashboard"

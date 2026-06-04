@@ -79,7 +79,17 @@ export default function MerchandiseStore() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col font-sans text-gray-100">
+    <div
+      className="min-h-screen bg-[#0a0a0a] flex flex-col font-sans text-gray-100"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(10, 10, 10, 0.52), rgba(10, 10, 10, 0.76)), url('https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/d74c88f62959dfdf70096fe612e9435b.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'scroll',
+      }}
+    >
       <Helmet>
         <title>Merchandise Store - TREEWATER STUDIOS</title>
         <meta name="description" content="Shop official Treewater Studios merchandise, apparel, and accessories." />

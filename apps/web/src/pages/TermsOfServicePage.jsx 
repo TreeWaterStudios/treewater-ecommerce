@@ -1,0 +1,215 @@
+import React from 'react';
+import { Helmet } from 'react-helmet';
+import Header from '@/components/Header.jsx';
+import Footer from '@/components/Footer.jsx';
+
+const TermsOfServicePage = () => {
+  return (
+    <>
+      <Helmet>
+        <title>Terms of Service - TREEWATER STUDIOS</title>
+        <meta
+          name="description"
+          content="Terms of Service for TREEWATER STUDIOS"
+        />
+      </Helmet>
+
+      <div className="min-h-screen bg-background">
+        <Header />
+
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="mb-10 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 neon-text">
+              Terms of Service
+            </h1>
+            <p className="text-muted-foreground">
+              Last updated: May 18, 2026
+            </p>
+          </div>
+
+          <section className="space-y-8 bg-card/70 border border-border rounded-2xl p-6 md:p-8 leading-relaxed text-muted-foreground">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">1. Agreement to Terms</h2>
+              <p>
+                By accessing or using the TREEWATER STUDIOS website, purchasing merchandise, interacting
+                with our BeatStars player, contacting us, or using any connected service, you agree to these
+                Terms of Service. If you do not agree, do not use the website.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">2. Our Services</h2>
+              <p>
+                TREEWATER STUDIOS may provide access to music, beat previews, beat licensing links,
+                merchandise, digital products, contact forms, and related content. Beat playback, licensing,
+                checkout, customer delivery, and music downloads may be handled through BeatStars. Merchandise
+                checkout and fulfillment may be handled through Stripe, Printful, and other approved service
+                providers.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">3. Beat Licensing</h2>
+              <p>
+                Purchasing or downloading a beat does not automatically give you ownership of the beat,
+                copyright, publishing rights, master rights, or exclusive rights unless a written license
+                agreement clearly says so. Your rights are limited to the license terms provided at the time
+                of purchase through BeatStars or directly by TREEWATER STUDIOS.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">4. Exclusive Rights</h2>
+              <p>
+                Exclusive rights may be available on select beats, but TREEWATER STUDIOS reserves the right
+                not to sell exclusive rights at any time. Exclusive licensing must be reviewed and approved
+                directly by TREEWATER STUDIOS in writing. A beat remains available for lease or sale unless
+                and until an exclusive license agreement is fully approved and completed.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">5. Payments</h2>
+              <p>
+                You agree to provide accurate billing, shipping, and contact information when making a
+                purchase. Payments may be processed by third-party providers such as Stripe, PayPal,
+                BeatStars, or other approved processors. TREEWATER STUDIOS is not responsible for payment
+                failures, processor outages, bank delays, or third-party account restrictions.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">6. Digital Products, Returns, and Refunds</h2>
+              <p>
+                Due to the digital nature of beats, licenses, audio files, downloads, and other digital
+                products, all digital sales are final. However, if you experience technical issues with your
+                files, please contact support and we will make reasonable efforts to resolve the issue
+                promptly.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">7. Merchandise Orders</h2>
+              <p>
+                Merchandise is typically made, printed, packed, or fulfilled through third-party fulfillment
+                partners. Shipping times, product availability, and fulfillment may vary. Please review your
+                order carefully before completing checkout. If an item arrives damaged, defective, or
+                incorrect, contact us as soon as possible so the issue can be reviewed.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">8. User Accounts</h2>
+              <p>
+                If you create an account or use a third-party account connected to purchases or downloads,
+                you are responsible for keeping your login information secure and for all activity under
+                your account. You agree not to use false information, impersonate another person, or interfere
+                with the security of the website.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">9. Intellectual Property</h2>
+              <p>
+                All TREEWATER STUDIOS names, logos, designs, website content, graphics, text, images, audio,
+                beats, artwork, and related materials are owned by TREEWATER STUDIOS or used with permission.
+                You may not copy, resell, redistribute, reproduce, upload, claim ownership of, or commercially
+                exploit our content except as allowed by a valid written license or purchase agreement.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">10. Prohibited Uses</h2>
+              <p>
+                You agree not to misuse the website, attempt unauthorized access, scrape or copy content,
+                interfere with checkout or security systems, upload malicious code, commit fraud, violate
+                intellectual property rights, harass others, or use our products or services for unlawful
+                purposes.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">11. Third-Party Services</h2>
+              <p>
+                Our website may use or link to third-party services, including BeatStars, Stripe, PayPal,
+                Printful, social media platforms, and hosting providers. These services are governed by their
+                own terms and policies. TREEWATER STUDIOS is not responsible for third-party websites,
+                platforms, checkout systems, delays, errors, policies, or account decisions.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">12. No Guarantee of Results</h2>
+              <p>
+                TREEWATER STUDIOS does not guarantee that any beat, product, license, service, or creative
+                work will produce a specific commercial result, number of streams, sales, placements,
+                followers, views, revenue, or career outcome.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">13. Availability and Errors</h2>
+              <p>
+                We may update, change, remove, suspend, or discontinue any part of the website or services at
+                any time. We work to keep information accurate, but errors in pricing, descriptions, product
+                availability, images, or technical functionality may occur. We reserve the right to correct
+                errors and cancel or refuse orders where permitted by law.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">14. Limitation of Liability</h2>
+              <p>
+                To the fullest extent permitted by law, TREEWATER STUDIOS will not be liable for indirect,
+                incidental, special, consequential, punitive, or lost-profit damages arising from your use of
+                the website, third-party services, purchases, downloads, merchandise, or licensed content.
+                Our total liability for any claim will not exceed the amount you paid for the product or
+                service giving rise to the claim.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">15. Indemnification</h2>
+              <p>
+                You agree to defend, indemnify, and hold harmless TREEWATER STUDIOS from claims, damages,
+                losses, liabilities, costs, and expenses arising from your misuse of the website, violation of
+                these Terms, violation of a license agreement, infringement of another party’s rights, or
+                unlawful conduct.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">16. Governing Law</h2>
+              <p>
+                These Terms are governed by the laws of the United States and the laws of the state where
+                TREEWATER STUDIOS is registered or principally operates, without regard to conflict of law
+                principles. Any dispute must be brought in a court with proper jurisdiction unless another
+                written agreement applies.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">17. Changes to These Terms</h2>
+              <p>
+                We may update these Terms from time to time. Updates will be posted on this page with a
+                revised “Last updated” date. Continued use of the website after changes are posted means you
+                accept the updated Terms.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">18. Contact</h2>
+              <p>
+                Questions about these Terms can be sent through the Contact page on our website.
+              </p>
+            </div>
+          </section>
+        </main>
+
+        <Footer />
+      </div>
+    </>
+  );
+};
+
+export default TermsOfServicePage;

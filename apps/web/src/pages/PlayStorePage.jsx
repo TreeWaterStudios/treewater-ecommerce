@@ -82,7 +82,7 @@ const PlayStorePage = () => {
             backgroundImage: 'url(https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/0e7eb4525461f9ea0b68e9f579890b19.png)',
           }}
         >
-          <div className="absolute inset-0 bg-black/75"></div>
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
 
         {/* Content Layer */}

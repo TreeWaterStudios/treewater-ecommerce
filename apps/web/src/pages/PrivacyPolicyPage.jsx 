@@ -1,0 +1,193 @@
+import React from 'react';
+import { Helmet } from 'react-helmet';
+import Header from '@/components/Header.jsx';
+import Footer from '@/components/Footer.jsx';
+
+const PrivacyPolicyPage = () => {
+  return (
+    <>
+      <Helmet>
+        <title>Privacy Policy - TREEWATER STUDIOS</title>
+        <meta
+          name="description"
+          content="Privacy Policy for TREEWATER STUDIOS"
+        />
+      </Helmet>
+
+      <div className="min-h-screen bg-background">
+        <Header />
+
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="mb-10 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 neon-text">
+              Privacy Policy
+            </h1>
+            <p className="text-muted-foreground">
+              Last updated: May 18, 2026
+            </p>
+          </div>
+
+          <section className="space-y-8 bg-card/70 border border-border rounded-2xl p-6 md:p-8 leading-relaxed text-muted-foreground">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">1. Overview</h2>
+              <p>
+                TREEWATER STUDIOS respects your privacy. This Privacy Policy explains how we collect, use,
+                share, and protect information when you visit our website, purchase merchandise, interact
+                with our BeatStars player, contact us, or use any services connected to TREEWATER STUDIOS.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">2. Information We Collect</h2>
+              <p className="mb-3">
+                We may collect information you provide directly, including your name, email address,
+                shipping address, billing details, order details, account information, contact form messages,
+                and any information you choose to send to us.
+              </p>
+              <p>
+                We may also collect limited technical information automatically, such as your device type,
+                browser type, IP address, pages visited, referring pages, and general website usage data.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">3. Payments</h2>
+              <p>
+                We do not store your full credit card number or full payment credentials on our website.
+                Merchandise payments may be processed by Stripe or other approved payment processors.
+                Beat purchases, licenses, downloads, and related music transactions may be handled through
+                BeatStars and its connected payment providers, including PayPal where available.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">4. Merchandise Fulfillment</h2>
+              <p>
+                When you purchase merchandise, we may share the information needed to fulfill your order
+                with our fulfillment partners, including Printful. This may include your name, shipping
+                address, product selection, and order details.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">5. BeatStars Player and Music Purchases</h2>
+              <p>
+                Our website may embed or link to a BeatStars player. When you interact with the BeatStars
+                player, purchase beats, download files, or enter licensing information, BeatStars may collect
+                and process information under its own policies and terms. TREEWATER STUDIOS does not control
+                BeatStars checkout, download delivery, account access, or third-party payment processing
+                inside the BeatStars platform.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">6. How We Use Information</h2>
+              <p>
+                We use information to operate the website, process orders, provide customer support, respond
+                to messages, deliver products or services, prevent fraud, troubleshoot technical issues,
+                improve the website, comply with legal obligations, and protect the rights and security of
+                TREEWATER STUDIOS and our customers.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">7. Sharing of Information</h2>
+              <p>
+                We do not sell your personal information. We may share information with trusted service
+                providers only as needed to operate the website, process payments, fulfill orders, deliver
+                digital products, provide analytics, prevent fraud, comply with law, or protect our legal
+                rights.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">8. Cookies and Tracking</h2>
+              <p>
+                Our website and third-party services may use cookies, pixels, analytics tools, or similar
+                technologies to keep the site working, remember preferences, understand traffic, improve
+                performance, and support payment or checkout functionality. You can adjust cookie settings
+                through your browser, but some features may not work correctly if cookies are disabled.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">9. Email Communications</h2>
+              <p>
+                If you provide your email address, we may use it to respond to your message, send order
+                updates, provide customer support, or send promotional updates where permitted. You may
+                request to stop receiving promotional emails at any time.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">10. Data Security</h2>
+              <p>
+                We use reasonable administrative, technical, and organizational safeguards to protect
+                information. However, no website, payment system, or online transmission is guaranteed to be
+                completely secure.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">11. Data Retention</h2>
+              <p>
+                We keep information only as long as reasonably necessary for business, legal, accounting,
+                tax, fraud prevention, dispute resolution, and customer support purposes, unless a longer
+                retention period is required or permitted by law.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">12. Your Privacy Rights</h2>
+              <p>
+                Depending on where you live, you may have rights to request access to, correction of,
+                deletion of, or restrictions on certain personal information. You may also have the right to
+                object to certain processing or opt out of certain marketing communications. To make a
+                privacy request, contact us through the Contact page.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">13. Children’s Privacy</h2>
+              <p>
+                Our website is not intended for children under 13. We do not knowingly collect personal
+                information from children under 13. If we learn that we have collected such information, we
+                will take reasonable steps to delete it.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">14. Third-Party Links</h2>
+              <p>
+                Our website may link to third-party websites or services, including Stripe, Printful,
+                BeatStars, PayPal, social media platforms, and other tools. Their privacy practices are
+                governed by their own policies, and we are not responsible for their content, security, or
+                privacy practices.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">15. Changes to This Policy</h2>
+              <p>
+                We may update this Privacy Policy from time to time. Updates will be posted on this page
+                with a revised “Last updated” date. Continued use of the website after changes are posted
+                means you accept the updated policy.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-3">16. Contact</h2>
+              <p>
+                Questions about this Privacy Policy can be sent through the Contact page on our website.
+              </p>
+            </div>
+          </section>
+        </main>
+
+        <Footer />
+      </div>
+    </>
+  );
+};
+
+export default PrivacyPolicyPage;

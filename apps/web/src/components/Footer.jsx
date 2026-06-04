@@ -12,7 +12,7 @@ const Footer = () => {
           <div>
             <span className="text-2xl font-bold neon-text">TREEWATER</span>
             <p className="text-sm text-muted-foreground mt-2">
-              Premium beats and merchandise for artists worldwide
+              Beat licensing, music production, and merchandise for independent artists.
             </p>
           </div>
 
@@ -24,6 +24,12 @@ const Footer = () => {
               </Link>
               <Link to="/merchandise" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                 Merchandise
+              </Link>
+              <Link to="/about" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                About
+              </Link>
+              <Link to="/faq" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                FAQ
               </Link>
               <Link to="/contact" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                 Contact

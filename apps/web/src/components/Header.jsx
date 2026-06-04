@@ -1,25 +1,14 @@
-
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, ShoppingCart as ShoppingCartIcon } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext.jsx';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ShoppingCart as ShoppingCartIcon } from 'lucide-react';
 import { useCart } from '@/hooks/useCart.jsx';
 import { Button } from '@/components/ui/button';
 import ShoppingCart from '@/components/ShoppingCart.jsx';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { isAuthenticated, currentUser, logout } = useAuth();
   const { cartItems } = useCart();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -32,11 +21,6 @@ const Header = () => {
     { name: 'Contact', path: '/contact' },
     { name: 'FAQ', path: '/faq' },
   ];
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
 
   const isActive = (path) => location.pathname === path;
 
@@ -67,10 +51,10 @@ const Header = () => {
             </nav>
 
             <div className="hidden lg:flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setIsCartOpen(true)} 
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsCartOpen(true)}
                 className="relative text-foreground hover:text-primary transition-colors"
                 aria-label="Open cart"
               >
@@ -81,44 +65,6 @@ const Header = () => {
                   </span>
                 )}
               </Button>
-
-              {isAuthenticated ? (
-                <>
-                  <Link to="/dashboard">
-                    <Button variant="outline" size="sm" className="border-primary/50 hover:border-primary">
-                      Dashboard
-                    </Button>
-                  </Link>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <User className="w-4 h-4" />
-                        {currentUser?.name || currentUser?.email}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              ) : (
-                <>
-                  <Link to="/login">
-                    <Button variant="ghost" size="sm">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link to="/signup">
-                    <Button size="sm" className="bg-primary text-foreground hover:bg-primary/90 hover:shadow-[0_0_15px_rgba(0,255,255,0.5)] transition-all duration-300">
-                      Sign Up
-                    </Button>
-                  </Link>
-                </>
-              )}
             </div>
 
             <div className="flex items-center space-x-4 lg:hidden">
@@ -162,41 +108,7 @@ const Header = () => {
                   {link.name}
                 </Link>
               ))}
-              <div className="pt-4 border-t border-border space-y-2">
-                {isAuthenticated ? (
-                  <>
-                    <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" className="w-full border-primary/50 justify-start">
-                        <User className="w-4 h-4 mr-2" /> Dashboard
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        handleLogout();
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full">
-                        Login
-                      </Button>
-                    </Link>
-                    <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                      <Button className="w-full bg-primary text-foreground">
-                        Sign Up
-                      </Button>
-                    </Link>
-                  </>
-                )}
-              </div>
+              
             </nav>
           </div>
         )}

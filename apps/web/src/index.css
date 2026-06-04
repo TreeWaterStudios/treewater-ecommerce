@@ -1,23 +1,3 @@
-html, body {
-  background-image: url('https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/d74c88f62959dfdf70096fe612e9435b.jpg') !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
-}
-
-#root, .app, main {
-  background: transparent !important;
-}
-
-* {
-  background-color: transparent !important;
-}
-
-.product-detail, .product-card, button, input, select, textarea {
-  background-color: inherit !important;
-}
-
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 
 @tailwind base;
@@ -83,6 +63,7 @@ html, body {
 body {
   font-family: "Geist", sans-serif;
   color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
   overflow-x: clip;
 }
 
@@ -97,7 +78,7 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer components {
   .product-detail {
-    background: transparent !important;
+    background: hsl(var(--background)) !important;
     box-shadow: none !important;
     margin: 2rem auto;
     max-width: 1200px;

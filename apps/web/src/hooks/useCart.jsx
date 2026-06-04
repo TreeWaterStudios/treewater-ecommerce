@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 
@@ -81,8 +80,9 @@ export const CartProvider = ({ children }) => {
   }, []);
 
   const clearCart = useCallback(() => {
-    console.log('🛒 Clearing entire cart');
+    console.log('🛒 Clearing entire cart after successful checkout');
     setCartItems([]);
+    localStorage.removeItem(CART_STORAGE_KEY);
   }, []);
 
   const getCartTotal = useCallback(() => {

@@ -9,39 +9,43 @@ const FAQPage = () => {
     {
       question: 'What is beat leasing?',
       answer:
-        'Beat leasing allows you to license a beat for your music project while the producer retains ownership. You get the rights to use the beat according to your lease tier (Starter, Standard, or Premium), which determines usage limits, file formats, and distribution rights.',
+        'Beat leasing allows you to license a beat for your music project while TreeWater Studios retains ownership of the instrumental. Your usage rights depend on the license option you select through BeatStars.',
+    },
+    {
+      question: 'Where do I preview and buy beats?',
+      answer:
+        'Beats can be previewed and licensed through the official TreeWater Studios BeatStars player on the Beat Leasing page. BeatStars handles beat playback, license options, secure checkout, and digital delivery.',
     },
     {
       question: 'What file formats do I receive?',
       answer:
-        'File formats depend on your lease tier. Starter includes MP3 (320kbps), Standard includes WAV + MP3, and Premium includes WAV + trackout stems for full mixing control.',
+        'File formats depend on the license option selected at checkout. Some licenses may include MP3, WAV, or trackout stems. Please review the license details shown in the BeatStars player before purchasing.',
     },
     {
       question: 'Can I use leased beats for commercial purposes?',
       answer:
-        'Yes! Standard and Premium tiers include commercial use rights. Starter tier is for non-commercial projects only. All tiers come with a legal contract specifying your usage rights.',
+        'Commercial use depends on the license you purchase. Review the license terms shown through BeatStars before checkout so you understand usage limits, distribution rights, and any restrictions.',
     },
     {
-      question: 'How does instant delivery work?',
+      question: 'How does digital delivery work?',
       answer:
-        'After purchase, you can immediately download your beat files and contract from your dashboard. Files are available for re-download anytime from your account.',
+        'After purchasing a beat license through BeatStars, your files and license information are delivered through the BeatStars purchase flow. Please use the email and account information connected to your BeatStars order.',
     },
     {
       question: 'What is your return & refund policy?',
       answer:
-        'Due to the digital nature of our products, all sales are final. However, if you experience technical issues with your files, please contact support and we\'ll resolve it promptly.',
+        'Digital beat/license purchases are generally final once delivered. If you experience a technical issue with a digital file, contact us and we will help resolve it. Merchandise returns or replacements are reviewed case by case for damaged, defective, or incorrect items.',
     },
     {
       question: 'How long does merchandise shipping take?',
       answer:
-        'Standard shipping takes 5-7 business days within the US. International orders may take 10-14 business days. You\'ll receive tracking information once your order ships.',
+        'Merchandise shipping times may vary based on the product, fulfillment status, and delivery location. Tracking information will be provided once your order ships.',
     },
     {
       question: 'Can I purchase exclusive rights to a beat?',
       answer:
-        'Exclusive rights may be available on select beats, but we reserve the right not to sell exclusive rights at this time. If you are interested in exclusive licensing, please contact us directly and we will review availability on a case-by-case basis.',
+        'Exclusive rights may be available on select beats, but TreeWater Studios reserves the right not to sell exclusive rights at this time. If you are interested in exclusive licensing, please contact us directly and we will review availability on a case-by-case basis.',
     },
-    
   ];
 
   return (
@@ -58,7 +62,7 @@ const FAQPage = () => {
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 neon-text">Frequently Asked Questions</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Find answers to common questions about our services
+              Find answers about beat licensing, merchandise, delivery, and support.
             </p>
           </div>
 
@@ -86,7 +90,7 @@ const FAQPage = () => {
             </p>
             <a href="/contact">
               <button className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
-                Contact Support
+                Contact TreeWater
               </button>
             </a>
           </div>

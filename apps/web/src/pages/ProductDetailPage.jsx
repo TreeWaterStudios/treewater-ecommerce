@@ -9,7 +9,6 @@ import { useCart } from '@/hooks/useCart.jsx';
 import { toast } from 'sonner';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
-import { getProduct } from '@/api/EcommerceApi.js';
 import { fetchProducts as fetchPrintfulProducts } from '@/api/printfulApi.js';
 import { getMockupsForProduct } from '@/api/mockupApi.js';
 import { getAdminToken } from '@/api/adminApi.js';
@@ -123,6 +122,93 @@ function getProductBasePrice(product, normalizedVariants, fallbackProduct = null
   return Number(firstVariantPrice || 0);
 }
 
+function extractProductsArray(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.products)) return response.products;
+  if (Array.isArray(response?.result)) return response.result;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.items)) return response.items;
+  return [];
+}
+
+function getProductId(product, index = 0, routeProductId = '') {
+  const id =
+    product?.productId ??
+    product?.id ??
+    product?.sync_product?.id ??
+    product?.syncProduct?.id ??
+    product?.product?.id ??
+    product?.product_id ??
+    product?.sync_product_id ??
+    product?.syncProductId ??
+    product?.external_id ??
+    product?.sync_product?.external_id ??
+    product?.variants?.[0]?.sync_product_id ??
+    product?.sync_variants?.[0]?.sync_product_id;
+
+  if (id !== undefined && id !== null && id !== '') {
+    return String(id);
+  }
+
+  return routeProductId ? String(routeProductId) : `fallback-${index}`;
+}
+
+function getProductName(product) {
+  return (
+    product?.productName ||
+    product?.name ||
+    product?.title ||
+    product?.sync_product?.name ||
+    product?.syncProduct?.name ||
+    product?.product?.name ||
+    'Unnamed Product'
+  );
+}
+
+function getProductImage(product) {
+  const variants = product?.variants || product?.sync_variants || [];
+  const firstVariant = variants[0] || {};
+
+  return (
+    product?.productImage ||
+    product?.image ||
+    product?.thumbnail ||
+    product?.thumbnail_url ||
+    product?.sync_product?.thumbnail_url ||
+    product?.syncProduct?.thumbnail_url ||
+    product?.product?.thumbnail_url ||
+    firstVariant?.files?.[0]?.preview_url ||
+    firstVariant?.files?.[0]?.thumbnail_url ||
+    fallbackImages[0]
+  );
+}
+
+function normalizeProductForDetail(product, routeProductId = '', index = 0) {
+  const variants =
+    product?.sync_variants ||
+    product?.variants ||
+    product?.data?.sync_variants ||
+    product?.data?.variants ||
+    [];
+
+  const normalizedId = getProductId(product, index, routeProductId);
+  const normalizedName = getProductName(product);
+  const normalizedImage = getProductImage(product);
+
+  return {
+    ...product,
+    id: normalizedId,
+    productId: normalizedId,
+    name: normalizedName,
+    title: product?.title || normalizedName,
+    image: normalizedImage,
+    thumbnail: normalizedImage,
+    thumbnail_url: normalizedImage,
+    variants,
+    sync_variants: variants,
+  };
+}
+
 export default function ProductDetailPage() {
   const isAdmin = !!getAdminToken();
   const params = useParams();
@@ -147,45 +233,95 @@ export default function ProductDetailPage() {
   const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
-    if (!product?.id) return;
+    const currentProductId = product?.productId || product?.id;
+    if (!currentProductId) return;
 
     const loadMockups = async () => {
+      const printfulImage = getProductImage(product);
+
       try {
-        const mockups = await getMockupsForProduct(product.id);
+        const mockups = await getMockupsForProduct(currentProductId);
         const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
+
         setMockupRecords(mockups);
 
         if (urls.length > 0) {
           setImages(urls);
           setMainImage(urls[0]);
+        } else if (printfulImage) {
+          setImages([printfulImage]);
+          setMainImage(printfulImage);
         } else {
           setImages([]);
           setMainImage(null);
         }
       } catch (error) {
         console.error('[MOCKUPS] Failed to load mockups:', error);
-        setImages([]);
+
+        if (printfulImage) {
+          setImages([printfulImage]);
+          setMainImage(printfulImage);
+        } else {
+          setImages([]);
+          setMainImage(null);
+        }
+
         setMockupRecords([]);
-        setMainImage(null);
       }
     };
 
     loadMockups();
-  }, [product?.id]);
+  }, [product?.productId, product?.id]);
 
-    useEffect(() => {
+  useEffect(() => {
     let isMounted = true;
 
     const loadProduct = async () => {
       if (!productId) return;
 
+      const routeProductId = String(productId);
+
       setLoading(true);
       setNotFound(false);
 
       try {
-        const data = await getProduct(productId);
+        const printfulResponse = await fetchPrintfulProducts();
+        const printfulProducts = extractProductsArray(printfulResponse);
 
-        if (!data) {
+        const stateName = normalizeProductName(
+          stateProduct?.productName ||
+          stateProduct?.name ||
+          stateProduct?.title ||
+          ''
+        );
+
+        const matchedEntry = printfulProducts
+          .map((item, index) => ({
+            item,
+            index,
+            id: getProductId(item, index),
+            name: normalizeProductName(getProductName(item)),
+          }))
+          .find((entry) => {
+            return (
+              entry.id === routeProductId ||
+              String(entry.item?.productId || '') === routeProductId ||
+              String(entry.item?.id || '') === routeProductId ||
+              (
+                stateName &&
+                entry.name &&
+                (
+                  entry.name === stateName ||
+                  entry.name.includes(stateName) ||
+                  stateName.includes(entry.name)
+                )
+              )
+            );
+          });
+
+        const baseProduct = matchedEntry?.item || stateProduct;
+
+        if (!baseProduct) {
           if (isMounted) {
             setNotFound(true);
             setProduct(null);
@@ -193,49 +329,17 @@ export default function ProductDetailPage() {
           return;
         }
 
-        let printfulVariants = [];
+        const mergedProduct = normalizeProductForDetail(
+          {
+            ...(stateProduct || {}),
+            ...(matchedEntry?.item || baseProduct),
+          },
+          routeProductId,
+          matchedEntry?.index ?? 0
+        );
 
-        try {
-          const printfulResponse = await fetchPrintfulProducts();
-
-          const printfulProducts = Array.isArray(printfulResponse)
-            ? printfulResponse
-            : printfulResponse?.products || [];
-
-          const hostingerName = normalizeProductName(data.name || data.title);
-
-          const matchedPrintfulProduct = printfulProducts.find((p) => {
-            const printfulName = normalizeProductName(p.name || p.title);
-
-            return (
-              printfulName === hostingerName ||
-              printfulName.includes(hostingerName) ||
-              hostingerName.includes(printfulName)
-            );
-          });
-
-          printfulVariants = matchedPrintfulProduct?.sync_variants || [];
-
-          console.log('[PRODUCT DETAIL HOSTINGER NAME]', data.name || data.title);
-          console.log('[PRODUCT DETAIL MATCHED PRINTFUL PRODUCT]', matchedPrintfulProduct);
-          console.log('[PRODUCT DETAIL PRINTFUL VARIANTS]', printfulVariants);
-        } catch (err) {
-          console.warn('[PRODUCT DETAIL] Could not load Printful variants:', err);
-        }
-
-        const mergedProduct = {
-          ...(data || {}),
-          name: data.name || data.title,
-          title: data.title || data.name,
-
-          variants: printfulVariants.length
-            ? printfulVariants
-            : data?.variants || data?.sync_variants || [],
-
-          sync_variants: printfulVariants.length
-            ? printfulVariants
-            : data?.sync_variants || data?.variants || [],
-        };
+        console.log('[PRODUCT DETAIL PRINTFUL PRODUCT]', mergedProduct);
+        console.log('[PRODUCT DETAIL PRINTFUL VARIANTS]', mergedProduct.sync_variants);
 
         if (isMounted) {
           setProduct((prev) => ({
@@ -244,9 +348,16 @@ export default function ProductDetailPage() {
           }));
         }
       } catch (err) {
-        console.error('❌ [ProductDetailPage] Error fetching product:', err);
+        console.error('❌ [ProductDetailPage] Error fetching Printful product:', err);
 
-        if (isMounted) {
+        if (stateProduct) {
+          const fallbackProduct = normalizeProductForDetail(stateProduct, routeProductId, 0);
+
+          if (isMounted) {
+            setProduct(fallbackProduct);
+            setNotFound(false);
+          }
+        } else if (isMounted) {
           setNotFound(true);
           setProduct(null);
         }
@@ -262,7 +373,7 @@ export default function ProductDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [productId]);
+  }, [productId, stateProduct]);
 
   const handleFileSelect = async (e) => {
     if (!isAdmin) return;
@@ -412,9 +523,12 @@ if (!token) {
         ? Number(selectedVariant.price)
         : getProductBasePrice(product, normalizedVariants, stateProduct);
 
+    const cartProductId = product.productId || product.id || productId;
+
     const cartImage =
       mainImage ||
       images[0] ||
+      product.productImage ||
       product.thumbnail_url ||
       product.thumbnail ||
       product.image ||
@@ -429,8 +543,8 @@ if (!token) {
       selectedVariant?.variantId;
 
     const cartItem = {
-      id: `${product.id}-${syncVariantId}`,
-      productId: product.id,
+      id: `${cartProductId}-${syncVariantId}`,
+      productId: cartProductId,
 
       // Printful order needs this
       sync_variant_id: Number(syncVariantId),

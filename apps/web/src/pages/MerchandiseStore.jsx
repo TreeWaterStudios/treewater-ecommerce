@@ -20,13 +20,14 @@ const extractProductsArray = response => {
 
 const getProductId = (product, index) => {
   const id =
-    product?.id ??
+    product?.productId ??
     product?.sync_product?.id ??
     product?.syncProduct?.id ??
-    product?.product?.id ??
-    product?.product_id ??
     product?.sync_product_id ??
     product?.syncProductId ??
+    product?.product_id ??
+    product?.product?.id ??
+    product?.id ??
     product?.external_id ??
     product?.sync_product?.external_id ??
     product?.variants?.[0]?.sync_product_id ??
@@ -36,6 +37,7 @@ const getProductId = (product, index) => {
     return String(id);
   }
 
+  console.error('[STORE] Missing product ID for product:', product);
   return `fallback-${index}`;
 };
 
@@ -97,9 +99,18 @@ export default function MerchandiseStore() {
         console.log('[STORE] 📦 Raw Printful Response:', response);
 
         const items = extractProductsArray(response);
-        const normalizedProducts = items.map((product, index) =>
-          normalizeProduct(product, index)
-        );
+        const normalizedProducts = items
+          .map((product, index) => normalizeProduct(product, index))
+          .filter((product) => {
+            const id = String(product.productId || '').trim();
+
+            if (!id || id === 'undefined' || id === 'null' || id.startsWith('fallback')) {
+              console.error('[STORE] Removed product with bad ID:', product);
+              return false;
+            }
+
+            return true;
+          });
 
         console.log('[STORE] 📊 Total Printful products extracted:', normalizedProducts.length);
 
@@ -189,7 +200,7 @@ export default function MerchandiseStore() {
                 className="group flex flex-col h-full"
               >
                 <Link
-                  to={`/product/${product.productId}`}
+                  to={`/product/${encodeURIComponent(product.productId)}`}
                   state={{ product }}
                   className="relative aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/10 mb-4 block"
                 >
@@ -212,7 +223,7 @@ export default function MerchandiseStore() {
 
                 <div className="flex flex-col flex-grow">
                   <Link
-                    to={`/product/${product.productId}`}
+                    to={`/product/${encodeURIComponent(product.productId)}`}
                     state={{ product }}
                     className="text-lg font-bold text-white hover:text-blue-400 transition-colors line-clamp-2 mb-2"
                   >

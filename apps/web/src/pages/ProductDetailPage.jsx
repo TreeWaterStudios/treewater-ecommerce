@@ -212,7 +212,7 @@ function normalizeProductForDetail(product, routeProductId = '', index = 0) {
 export default function ProductDetailPage() {
   const isAdmin = !!getAdminToken();
   const params = useParams();
-  const productId = params.productId || params.id;
+  const productId = String(params.productId || params.id || '').trim();
 
   const location = useLocation();
   const stateProduct = location.state?.product || null;
@@ -243,12 +243,10 @@ export default function ProductDetailPage() {
     const merged = new Map();
 
     [...currentMockups, ...incomingMockups].forEach((mockup) => {
-      const mockupProductId = String(
-        mockup?.productId ||
-        mockup?.product_id ||
-        mockup?.productID ||
-        mockup?.printfulProductId ||
-        ''
+      const activeProductId = String(
+        productId && productId !== 'undefined' && productId !== 'null'
+          ? productId
+          : product?.productId || product?.id || ''
       ).trim();
 
       const imageUrl = mockup?.imageUrl || mockup?.image || mockup?.url || '';
@@ -429,7 +427,16 @@ useEffect(() => {
     if (!isAdmin) return;
     
     const files = Array.from(e.target.files || []);
-    if (!files.length || !activeProductId) return;
+    if (
+      !files.length ||
+      !activeProductId ||
+      activeProductId === 'undefined' ||
+      activeProductId === 'null' ||
+      activeProductId.startsWith('fallback')
+    ) {
+      toast.error('Invalid product ID. Go back to Merchandise and reopen this product.');
+      return;
+    }
 
     const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
@@ -705,7 +712,15 @@ if (!token) {
 
     if (!isAdmin) return;
 
-    if (!activeProductId) return;
+    if (
+      !activeProductId ||
+      activeProductId === 'undefined' ||
+      activeProductId === 'null' ||
+      activeProductId.startsWith('fallback')
+    ) {
+      toast.error('Invalid product ID. Go back to Merchandise and reopen this product.');
+      return;
+    }
 
     let files = [];
 

@@ -8,6 +8,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
 import { fetchProducts } from '@/api/printfulApi.js';
+const getProductId = (product, index) => {
+  const id =
+    product?.id ??
+    product?.sync_product?.id ??
+    product?.syncProduct?.id ??
+    product?.product_id ??
+    product?.sync_product_id ??
+    product?.syncProductId ??
+    product?.external_id ??
+    product?.sync_product?.external_id ??
+    product?.variants?.[0]?.sync_product_id ??
+    product?.sync_variants?.[0]?.sync_product_id;
+
+  return id !== undefined && id !== null && id !== ''
+    ? String(id)
+    : `fallback-${index}`;
+};
+
 export default function MerchandiseStore() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,9 +66,7 @@ export default function MerchandiseStore() {
             product.sync_product?.name ||
             'Unnamed Product';
 
-          const productId =
-            product.id ||
-            product.sync_product?.id;
+          const productId = getProductId(product, 0);
 
           console.log(`[STORE] 🏷️ Printful Product - ID: ${productId}, Name: ${productName}`);
         });
@@ -113,9 +129,7 @@ export default function MerchandiseStore() {
   product.sync_product?.name ||
   'Unnamed Product';
 
-const productId =
-  product.id ||
-  product.sync_product?.id;
+              const productId = getProductId(product, index);
 
 const productVariants =
   product.variants ||

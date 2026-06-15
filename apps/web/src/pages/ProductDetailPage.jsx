@@ -239,6 +239,29 @@ export default function ProductDetailPage() {
     ''
   ).trim();
 
+  const applyGalleryImages = (mockups = [], fallbackImage = '') => {
+    const urls = mockups
+      .map((m) => m.imageUrl || m.image || m.url)
+      .filter(Boolean);
+
+    setMockupRecords(mockups);
+
+    if (urls.length > 0) {
+      setImages(urls);
+      setMainImage(urls[0]);
+      return;
+    }
+
+    if (fallbackImage) {
+      setImages([fallbackImage]);
+      setMainImage(fallbackImage);
+      return;
+    }
+
+    setImages([]);
+    setMainImage(null);
+  };
+
   useEffect(() => {
     if (!product || !activeProductId) return;
 
@@ -252,20 +275,7 @@ export default function ProductDetailPage() {
 
         console.log('[PRODUCT DETAIL] activeProductId:', activeProductId);
         console.log('[PRODUCT DETAIL] isolated mockups:', mockups);
-        const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
-
-        setMockupRecords(mockups);
-
-        if (urls.length > 0) {
-          setImages(urls);
-          setMainImage(urls[0]);
-        } else if (printfulImage) {
-          setImages([printfulImage]);
-          setMainImage(printfulImage);
-        } else {
-          setImages([]);
-          setMainImage(null);
-        }
+        applyGalleryImages(mockups, printfulImage);
       } catch (error) {
         console.error('[MOCKUPS] Failed to load mockups:', error);
 
@@ -390,7 +400,7 @@ export default function ProductDetailPage() {
     if (!isAdmin) return;
     
     const files = Array.from(e.target.files || []);
-    if (!files.length || !product?.id) return;
+    if (!files.length || !activeProductId) return;
 
     const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
@@ -422,12 +432,20 @@ if (!token) {
 
       if (!res.ok) throw new Error('Upload failed');
 
-      const mockups = await getMockupsForProduct(activeProductId);
-      const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
+      const createdMockup = await res.json().catch(() => null);
 
-      setMockupRecords(mockups);
-      setImages(urls);
-      setMainImage(urls[0] || null);
+      let mockups = await getMockupsForProduct(activeProductId);
+
+      if (!mockups.length && createdMockup?.imageUrl) {
+        mockups = [
+          {
+            ...createdMockup,
+            productId: activeProductId,
+          },
+        ];
+      }
+
+      applyGalleryImages(mockups, getProductImage(product));
 
       toast.success('Image uploaded successfully');
     } catch (err) {
@@ -598,7 +616,7 @@ if (!token) {
   };
 
   const handleDeleteMockup = async (mockupId) => {
-    if (!isAdmin || !product?.id || !mockupId) return;
+    if (!isAdmin || !activeProductId || !mockupId) return;
 
     if (!window.confirm('Remove this mockup?')) return;
 
@@ -609,7 +627,7 @@ if (!token) {
         throw new Error('No admin token found');
       }
 
-      const res = await fetch(`https://treewater-ecommerce.onrender.com/products/${product.id}/mockups/${mockupId}`, {
+      const res = await fetch(`https://treewater-ecommerce.onrender.com/products/${activeProductId}/mockups/${mockupId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -622,12 +640,9 @@ if (!token) {
         throw new Error(data.error || 'Failed to remove mockup');
       }
 
-      const mockups = await getMockupsForProduct(product.id);
-      const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
+      const mockups = await getMockupsForProduct(activeProductId);
 
-      setMockupRecords(mockups);
-      setImages(urls);
-      setMainImage(urls[0] || null);
+      applyGalleryImages(mockups, getProductImage(product));
 
       toast.success('Mockup removed');
     } catch (err) {
@@ -664,7 +679,7 @@ if (!token) {
 
     if (!isAdmin) return;
 
-    if (!product?.id) return;
+    if (!activeProductId) return;
 
     let files = [];
 
@@ -705,12 +720,20 @@ if (!token) {
   });
       if (!res.ok) throw new Error('Upload failed');
 
-      const mockups = await getMockupsForProduct(activeProductId);
-      const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
+      const createdMockup = await res.json().catch(() => null);
 
-      setMockupRecords(mockups);
-      setImages(urls);
-      setMainImage(urls[0] || null);
+      let mockups = await getMockupsForProduct(activeProductId);
+
+      if (!mockups.length && createdMockup?.imageUrl) {
+        mockups = [
+          {
+            ...createdMockup,
+            productId: activeProductId,
+          },
+        ];
+      }
+
+      applyGalleryImages(mockups, getProductImage(product));
 
       toast.success('Image uploaded successfully');
     } catch (err) {

@@ -72,7 +72,7 @@ export const uploadMockupForProduct = async (productId, file, label = '') => {
   const safeProductId = cleanProductId(productId);
 
   const formData = new FormData();
-  formData.append('mockup', file);
+  formData.append('file', file);
   formData.append('label', label);
 
   const token = localStorage.getItem('adminToken');

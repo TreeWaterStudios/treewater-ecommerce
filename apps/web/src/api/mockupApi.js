@@ -53,12 +53,10 @@ export const getMockupsForProduct = async (productId) => {
     ''
   ).trim();
 
-  // If backend already filtered by /products/:productId/mockups
-  // but does not return productId in the JSON, keep the record.
   if (!mockupProductId) {
-    console.warn('[MOCKUPS] Missing productId on returned mockup record:', mockup);
-    return true;
-  }
+  console.warn('[MOCKUPS] Dropped mockup with missing productId:', mockup);
+  return false;
+}
 
   return mockupProductId === safeProductId;
 });

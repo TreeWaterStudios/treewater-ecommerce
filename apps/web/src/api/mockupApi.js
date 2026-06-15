@@ -11,10 +11,20 @@ const cleanProductId = (productId) => {
 };
 
 export const getMockupsForProduct = async (productId) => {
-  const safeProductId = cleanProductId(productId);
+  const safeProductId = String(productId || '').trim();
+
+  if (
+    !safeProductId ||
+    safeProductId === 'undefined' ||
+    safeProductId === 'null' ||
+    safeProductId.startsWith('fallback')
+  ) {
+    console.error('[MOCKUPS] Blocked bad productId:', safeProductId);
+    return [];
+  }
 
   const response = await fetch(
-    `${API_BASE}/products/${encodeURIComponent(safeProductId)}/mockups`,
+    `https://treewater-ecommerce.onrender.com/products/${encodeURIComponent(safeProductId)}/mockups`,
     { cache: 'no-store' }
   );
 
@@ -22,7 +32,33 @@ export const getMockupsForProduct = async (productId) => {
     throw new Error('Failed to fetch product mockups');
   }
 
-  return response.json();
+  const data = await response.json();
+
+  const rawMockups = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.mockups)
+      ? data.mockups
+      : Array.isArray(data?.items)
+        ? data.items
+        : Array.isArray(data?.data)
+          ? data.data
+          : [];
+
+  const isolatedMockups = rawMockups.filter((mockup) => {
+    const mockupProductId = String(
+      mockup?.productId ||
+      mockup?.product_id ||
+      ''
+    ).trim();
+
+    return mockupProductId === safeProductId;
+  });
+
+  console.log('[MOCKUPS] Requested productId:', safeProductId);
+  console.log('[MOCKUPS] Raw returned:', rawMockups.length);
+  console.log('[MOCKUPS] Isolated returned:', isolatedMockups.length);
+
+  return isolatedMockups;
 };
 
 export const uploadMockupForProduct = async (productId, file, label = '') => {

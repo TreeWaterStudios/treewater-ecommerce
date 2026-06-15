@@ -249,6 +249,9 @@ export default function ProductDetailPage() {
         console.log('[MOCKUPS] Loading for productId:', activeProductId);
 
         const mockups = await getMockupsForProduct(activeProductId);
+
+        console.log('[PRODUCT DETAIL] activeProductId:', activeProductId);
+        console.log('[PRODUCT DETAIL] isolated mockups:', mockups);
         const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
         setMockupRecords(mockups);

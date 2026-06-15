@@ -1,10 +1,11 @@
-
 import apiServerClient from '@/lib/apiServerClient.js';
 
 export const fetchProducts = async () => {
   try {
     console.log('Fetching products from: /printful/products');
-    const response = await apiServerClient.fetch('/printful/products');
+    const response = await apiServerClient.fetch(`/printful/products?t=${Date.now()}`, {
+  cache: 'no-store',
+});
     console.log(`Response status: ${response.status}`);
     
     if (!response.ok) {

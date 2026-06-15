@@ -45,14 +45,23 @@ export const getMockupsForProduct = async (productId) => {
           : [];
 
   const isolatedMockups = rawMockups.filter((mockup) => {
-    const mockupProductId = String(
-      mockup?.productId ||
-      mockup?.product_id ||
-      ''
-    ).trim();
+  const mockupProductId = String(
+    mockup?.productId ||
+    mockup?.product_id ||
+    mockup?.productID ||
+    mockup?.printfulProductId ||
+    ''
+  ).trim();
 
-    return mockupProductId === safeProductId;
-  });
+  // If backend already filtered by /products/:productId/mockups
+  // but does not return productId in the JSON, keep the record.
+  if (!mockupProductId) {
+    console.warn('[MOCKUPS] Missing productId on returned mockup record:', mockup);
+    return true;
+  }
+
+  return mockupProductId === safeProductId;
+});
 
   console.log('[MOCKUPS] Requested productId:', safeProductId);
   console.log('[MOCKUPS] Raw returned:', rawMockups.length);

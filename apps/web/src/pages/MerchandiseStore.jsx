@@ -19,25 +19,41 @@ const extractProductsArray = response => {
 };
 
 const getProductId = (product, index) => {
-  const id =
-    product?.productId ??
-    product?.sync_product?.id ??
-    product?.syncProduct?.id ??
-    product?.sync_product_id ??
-    product?.syncProductId ??
-    product?.product_id ??
-    product?.product?.id ??
-    product?.id ??
-    product?.external_id ??
-    product?.sync_product?.external_id ??
-    product?.variants?.[0]?.sync_product_id ??
-    product?.sync_variants?.[0]?.sync_product_id;
+  const isValidProductId = (value) => {
+  const id = String(value ?? '').trim();
+  const lower = id.toLowerCase();
 
-  if (id !== undefined && id !== null && id !== '') {
-    return String(id);
+  return (
+    id &&
+    lower !== 'undefined' &&
+    lower !== 'null' &&
+    !lower.includes('undefined') &&
+    !lower.includes('null') &&
+    !id.startsWith('fallback')
+  );
+};
+
+const getProductId = (product, index) => {
+  const candidates = [
+    product?.sync_product?.id,
+    product?.syncProduct?.id,
+    product?.sync_product_id,
+    product?.syncProductId,
+    product?.sync_variants?.[0]?.sync_product_id,
+    product?.variants?.[0]?.sync_product_id,
+    product?.product?.id,
+    product?.product_id,
+    product?.productId,
+    product?.id,
+  ];
+
+  const id = candidates.find(isValidProductId);
+
+  if (id) {
+    return String(id).trim();
   }
 
-  console.error('[STORE] Missing product ID for product:', product);
+  console.error('[STORE] Missing real Printful product ID for product:', product);
   return `fallback-${index}`;
 };
 

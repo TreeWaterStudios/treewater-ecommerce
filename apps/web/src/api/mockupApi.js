@@ -1,9 +1,23 @@
 const API_BASE = 'https://treewater-ecommerce.onrender.com';
 
-const cleanProductId = (productId) => {
-  const id = String(productId || '').trim();
+const isValidProductId = (value) => {
+  const id = String(value ?? '').trim();
+  const lower = id.toLowerCase();
 
-  if (!id || id === 'undefined' || id === 'null' || id.startsWith('fallback')) {
+  return (
+    id &&
+    lower !== 'undefined' &&
+    lower !== 'null' &&
+    !lower.includes('undefined') &&
+    !lower.includes('null') &&
+    !id.startsWith('fallback')
+  );
+};
+
+const cleanProductId = (productId) => {
+  const id = String(productId ?? '').trim();
+
+  if (!isValidProductId(id)) {
     throw new Error(`Invalid mockup productId: ${id}`);
   }
 
@@ -13,12 +27,7 @@ const cleanProductId = (productId) => {
 export const getMockupsForProduct = async (productId) => {
   const safeProductId = String(productId || '').trim();
 
-  if (
-    !safeProductId ||
-    safeProductId === 'undefined' ||
-    safeProductId === 'null' ||
-    safeProductId.startsWith('fallback')
-  ) {
+  if (!isValidProductId(safeProductId)) {
     console.error('[MOCKUPS] Blocked bad productId:', safeProductId);
     return [];
   }

@@ -19,7 +19,7 @@ const fallbackImages = [
   '/images/treewater-hoodie-back.jpg'
 ];
 
-const MAX_IMAGES = 3;
+const MAX_IMAGES = Number.POSITIVE_INFINITY;
 const SIZE_ORDER = ['2XS', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
 
 function extractSize(value = '') {
@@ -131,26 +131,42 @@ function extractProductsArray(response) {
   return [];
 }
 
-function getProductId(product, index = 0, routeProductId = '') {
-  const id =
-    product?.productId ??
-    product?.id ??
-    product?.sync_product?.id ??
-    product?.syncProduct?.id ??
-    product?.product?.id ??
-    product?.product_id ??
-    product?.sync_product_id ??
-    product?.syncProductId ??
-    product?.external_id ??
-    product?.sync_product?.external_id ??
-    product?.variants?.[0]?.sync_product_id ??
-    product?.sync_variants?.[0]?.sync_product_id;
+function isValidProductId(value) {
+  const id = String(value ?? '').trim();
+  const lower = id.toLowerCase();
 
-  if (id !== undefined && id !== null && id !== '') {
-    return String(id);
+  return (
+    id &&
+    lower !== 'undefined' &&
+    lower !== 'null' &&
+    !lower.includes('undefined') &&
+    !lower.includes('null') &&
+    !id.startsWith('fallback')
+  );
+}
+
+function getProductId(product, index = 0, routeProductId = '') {
+  const candidates = [
+    product?.sync_product?.id,
+    product?.syncProduct?.id,
+    product?.sync_product_id,
+    product?.syncProductId,
+    product?.sync_variants?.[0]?.sync_product_id,
+    product?.variants?.[0]?.sync_product_id,
+    product?.product?.id,
+    product?.product_id,
+    product?.productId,
+    product?.id,
+    routeProductId,
+  ];
+
+  const id = candidates.find(isValidProductId);
+
+  if (id) {
+    return String(id).trim();
   }
 
-  return routeProductId ? String(routeProductId) : `fallback-${index}`;
+  return `fallback-${index}`;
 }
 
 function getProductName(product) {
@@ -232,27 +248,34 @@ export default function ProductDetailPage() {
   const [mainImage, setMainImage] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
+  const normalizedProductId = product ? getProductId(product, 0, '') : '';
+
   const activeProductId = String(
-  productId ||
-  product?.productId ||
-  product?.id ||
-  ''
-).trim();
+    isValidProductId(normalizedProductId)
+      ? normalizedProductId
+      : isValidProductId(productId)
+        ? productId
+        : ''
+  ).trim();
 
   const mergeMockupsForProduct = (currentMockups = [], incomingMockups = []) => {
+    if (!isValidProductId(activeProductId)) return [];
+
     const merged = new Map();
 
     [...currentMockups, ...incomingMockups].forEach((mockup) => {
-      const activeProductId = String(
-        productId && productId !== 'undefined' && productId !== 'null'
-          ? productId
-          : product?.productId || product?.id || ''
+      const mockupProductId = String(
+        mockup?.productId ??
+        mockup?.product_id ??
+        mockup?.productID ??
+        mockup?.printfulProductId ??
+        ''
       ).trim();
 
       const imageUrl = mockup?.imageUrl || mockup?.image || mockup?.url || '';
 
       if (!imageUrl) return;
-      if (!mockupProductId) return;
+      if (!isValidProductId(mockupProductId)) return;
       if (mockupProductId !== activeProductId) return;
 
       const key = mockup?.id || imageUrl;
@@ -429,10 +452,7 @@ useEffect(() => {
     const files = Array.from(e.target.files || []);
     if (
       !files.length ||
-      !activeProductId ||
-      activeProductId === 'undefined' ||
-      activeProductId === 'null' ||
-      activeProductId.startsWith('fallback')
+      !isValidProductId(activeProductId)
     ) {
       toast.error('Invalid product ID. Go back to Merchandise and reopen this product.');
       return;
@@ -713,10 +733,7 @@ if (!token) {
     if (!isAdmin) return;
 
     if (
-      !activeProductId ||
-      activeProductId === 'undefined' ||
-      activeProductId === 'null' ||
-      activeProductId.startsWith('fallback')
+      !isValidProductId(activeProductId)
     ) {
       toast.error('Invalid product ID. Go back to Merchandise and reopen this product.');
       return;

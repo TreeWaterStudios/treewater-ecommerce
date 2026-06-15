@@ -45,157 +45,186 @@ const upload = multer({
 });
 
 /**
- * GET /products/:productId/mockups
- * Public
+ * Validate productId from request params
+ * @param {string} productId - The productId to validate
+ * @throws {Error} If productId is invalid
+ * @returns {string} The validated productId
  */
-router.get('/products/:productId/mockups', async (req, res, next) => {
-  try {
-    const { productId } = req.params;
-    const pb = getPocketBaseClient();
+function validateProductId(productId) {
+  const id = String(productId ?? '').trim();
+  const lower = id.toLowerCase();
 
-    if (!productId || typeof productId !== 'string') {
-      return res.status(400).json({ error: 'Product ID is required and must be a string' });
-    }
-
-    logger.info(`GET /products/${productId}/mockups - Fetching mockups from PocketBase`);
-
-    const mockups = await pb.collection('mockups').getFullList({
-      filter: `productId = "${productId}"`,
-      sort: 'displayOrder',
-      requestKey: null,
-    });
-
-    logger.info(`✅ Fetched ${mockups.length} mockups for product ${productId}`);
-
-    const formattedMockups = mockups.map((mockup) => ({
-      id: mockup.id,
-      imageUrl: mockup.imageUrl || '',
-      label: mockup.label || null,
-      displayOrder: mockup.displayOrder,
-    }));
-
-    res.json(formattedMockups);
-  } catch (error) {
-    next(error);
+  if (
+    !id ||
+    lower === 'undefined' ||
+    lower === 'null' ||
+    lower.includes('undefined') ||
+    lower.includes('null') ||
+    id.startsWith('fallback')
+  ) {
+    throw new Error('Invalid productId: must be a real Printful sync product ID');
   }
+
+  return id;
+}
+
+/**
+ * Escape double quotes in filter strings for PocketBase
+ * @param {string} value - The value to escape
+ * @returns {string} The escaped value
+ */
+function escapeFilterValue(value) {
+  return String(value).replace(/"/g, '\\"');
+}
+
+/**
+ * GET /products/:productId/mockups
+ * Public - Fetch all mockups for a product
+ */
+router.get('/products/:productId/mockups', async (req, res) => {
+  const { productId } = req.params;
+
+  let safeProductId;
+
+  try {
+    safeProductId = validateProductId(productId);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  const escapedProductId = escapeFilterValue(safeProductId);
+  const pb = getPocketBaseClient();
+
+  logger.info(`GET /products/${productId}/mockups - Fetching mockups from PocketBase`);
+
+  const mockups = await pb.collection('mockups').getFullList({
+    filter: `productId = "${escapedProductId}"`,
+    sort: 'displayOrder,created',
+    requestKey: null,
+  });
+
+  logger.info(`✅ Fetched mockups for product`, { productId: safeProductId, count: mockups.length });
+
+  res.json(
+    mockups.map((mockup) => ({
+      ...mockup,
+      productId: mockup.productId || safeProductId,
+    }))
+  );
 });
 
 /**
  * POST /products/:productId/mockups
- * Admin only
+ * Admin only - Upload a new mockup for a product
  */
-router.post('/products/:productId/mockups', requireAdminAuth, upload.single('file'), async (req, res, next) => {
+router.post('/products/:productId/mockups', requireAdminAuth, upload.single('file'), async (req, res) => {
+  const { productId } = req.params;
+  const { label, displayOrder } = req.body;
+  const pb = getPocketBaseClient();
+
+  let safeProductId;
+
   try {
-    const { productId } = req.params;
-    const { label } = req.body;
-    const pb = getPocketBaseClient();
-
-    if (!productId || typeof productId !== 'string') {
-      return res.status(400).json({ error: 'Product ID is required and must be a string' });
-    }
-
-    if (!req.file) {
-      logger.warn('[MOCKUP UPLOAD] No file provided in request');
-      return res.status(400).json({ error: 'No file provided' });
-    }
-
-    const { originalname, size, mimetype, buffer } = req.file;
-
-    logger.info(`[MOCKUP UPLOAD] Admin ${req.admin?.email || req.admin?.id || 'unknown'} uploading mockup for product ${productId}`);
-    logger.info(`[MOCKUP UPLOAD]   - Filename: ${originalname}`);
-    logger.info(`[MOCKUP UPLOAD]   - Size: ${size} bytes`);
-    logger.info(`[MOCKUP UPLOAD]   - MIME type: ${mimetype}`);
-
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'product-mockups',
-          resource_type: 'auto',
-          timeout: 60000,
-        },
-        (error, result) => {
-          if (error) {
-            logger.error(`[MOCKUP UPLOAD] Cloudinary upload failed: ${error.message}`);
-            reject(new Error(`Cloudinary upload failed: ${error.message}`));
-          } else if (!result) {
-            logger.error('[MOCKUP UPLOAD] Cloudinary returned no result');
-            reject(new Error('Cloudinary upload returned no result'));
-          } else {
-            resolve(result);
-          }
-        }
-      );
-
-      uploadStream.end(buffer);
-    });
-
-    const { secure_url, public_id } = uploadResult;
-
-    logger.info('[MOCKUP UPLOAD] File uploaded to Cloudinary successfully');
-    logger.info(`[MOCKUP UPLOAD]   - Public ID: ${public_id}`);
-    logger.info(`[MOCKUP UPLOAD]   - URL: ${secure_url}`);
-
-    const existingMockups = await pb.collection('mockups').getFullList({
-      filter: `productId = "${productId}"`,
-      sort: '-displayOrder',
-      requestKey: null,
-    });
-
-    const maxDisplayOrder = existingMockups.length > 0 ? Number(existingMockups[0].displayOrder || 0) : 0;
-    const newDisplayOrder = maxDisplayOrder + 1;
-
-    logger.info(`[MOCKUP UPLOAD] Max displayOrder: ${maxDisplayOrder}, New displayOrder: ${newDisplayOrder}`);
-
-    const mockupRecord = await pb.collection('mockups').create({
-      productId,
-      imageUrl: secure_url,
-      label: label || `View ${newDisplayOrder}`,
-      displayOrder: newDisplayOrder,
-    });
-
-    logger.info(`[MOCKUP UPLOAD] ✅ Mockup record created: ${mockupRecord.id}`);
-
-    res.status(201).json({
-      id: mockupRecord.id,
-      imageUrl: mockupRecord.imageUrl || '',
-      label: mockupRecord.label || null,
-      displayOrder: mockupRecord.displayOrder,
-    });
+    safeProductId = validateProductId(productId);
   } catch (error) {
-    next(error);
+    return res.status(400).json({ error: error.message });
   }
+
+  // Validate file exists
+  if (!req.file) {
+    logger.warn('[MOCKUP UPLOAD] No file provided in request');
+    return res.status(400).json({ error: 'No file provided' });
+  }
+
+  const { originalname, size, mimetype, buffer } = req.file;
+
+  logger.info(`[MOCKUP UPLOAD] Admin ${req.admin?.email || req.admin?.id || 'unknown'} uploading mockup for product ${productId}`);
+  logger.info(`[MOCKUP UPLOAD]   - Filename: ${originalname}`);
+  logger.info(`[MOCKUP UPLOAD]   - Size: ${size} bytes`);
+  logger.info(`[MOCKUP UPLOAD]   - MIME type: ${mimetype}`);
+
+  // Upload to Cloudinary
+  const uploadResult = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'treewater/mockups',
+        resource_type: 'auto',
+        timeout: 60000,
+      },
+      (error, result) => {
+        if (error) {
+          logger.error(`[MOCKUP UPLOAD] Cloudinary upload failed: ${error.message}`);
+          reject(new Error(`Cloudinary upload failed: ${error.message}`));
+        } else if (!result) {
+          logger.error('[MOCKUP UPLOAD] Cloudinary returned no result');
+          reject(new Error('Cloudinary upload returned no result'));
+        } else {
+          resolve(result);
+        }
+      }
+    );
+
+    uploadStream.end(buffer);
+  });
+
+  const { secure_url, public_id } = uploadResult;
+
+  logger.info('[MOCKUP UPLOAD] File uploaded to Cloudinary successfully');
+  logger.info(`[MOCKUP UPLOAD]   - Public ID: ${public_id}`);
+  logger.info(`[MOCKUP UPLOAD]   - URL: ${secure_url}`);
+
+  // Create mockup record in PocketBase
+  const mockupRecord = await pb.collection('mockups').create({
+    productId: safeProductId,
+    imageUrl: secure_url,
+    label: label || null,
+    displayOrder: displayOrder !== undefined ? Number(displayOrder) : 0,
+  });
+
+  logger.info(`[MOCKUP UPLOAD] ✅ Mockup record created: ${mockupRecord.id}`);
+
+  res.status(201).json({
+    id: mockupRecord.id,
+    productId: mockupRecord.productId || productId,
+    imageUrl: mockupRecord.imageUrl || '',
+    label: mockupRecord.label || null,
+    displayOrder: mockupRecord.displayOrder,
+  });
 });
 
 /**
  * DELETE /products/:productId/mockups/:mockupId
- * Admin only
+ * Admin only - Delete a mockup
  */
-router.delete('/products/:productId/mockups/:mockupId', requireAdminAuth, async (req, res, next) => {
-  try {
-    const { productId, mockupId } = req.params;
-    const pb = getPocketBaseClient();
+router.delete('/products/:productId/mockups/:mockupId', requireAdminAuth, async (req, res) => {
+  const { productId, mockupId } = req.params;
+  const pb = getPocketBaseClient();
 
-    if (!productId || typeof productId !== 'string') {
-      return res.status(400).json({ error: 'Product ID is required and must be a string' });
-    }
-
-    if (!mockupId || typeof mockupId !== 'string') {
-      return res.status(400).json({ error: 'Mockup ID is required and must be a string' });
-    }
-
-    logger.info(`[MOCKUP DELETE] Admin ${req.admin?.email || req.admin?.id || 'unknown'} deleting mockup ${mockupId} for product ${productId}`);
-
-    await pb.collection('mockups').delete(mockupId);
-
-    logger.info(`[MOCKUP DELETE] ✅ Mockup deleted: ${mockupId}`);
-
-    res.json({
-      success: true,
-      deletedId: mockupId,
-    });
-  } catch (error) {
-    next(error);
+  // Validate productId
+  if (
+    productId === undefined ||
+    productId === null ||
+    productId === 'undefined' ||
+    productId === 'null' ||
+    (typeof productId === 'string' && productId.startsWith('fallback'))
+  ) {
+    return res.status(400).json({ error: 'Invalid productId: must be a valid string' });
   }
+
+  if (!mockupId || typeof mockupId !== 'string') {
+    return res.status(400).json({ error: 'Mockup ID is required and must be a string' });
+  }
+
+  logger.info(`[MOCKUP DELETE] Admin ${req.admin?.email || req.admin?.id || 'unknown'} deleting mockup ${mockupId} for product ${productId}`);
+
+  await pb.collection('mockups').delete(mockupId);
+
+  logger.info(`[MOCKUP DELETE] ✅ Mockup deleted: ${mockupId}`);
+
+  res.json({
+    success: true,
+    deletedId: mockupId,
+  });
 });
 
 export default router;

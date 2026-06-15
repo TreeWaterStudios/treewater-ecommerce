@@ -233,36 +233,65 @@ export default function ProductDetailPage() {
   const [dragActive, setDragActive] = useState(false);
 
   const activeProductId = String(
-    productId ||
-    product?.productId ||
-    product?.id ||
-    ''
-  ).trim();
+  productId ||
+  product?.productId ||
+  product?.id ||
+  ''
+).trim();
 
-  const applyGalleryImages = (mockups = [], fallbackImage = '') => {
-    const urls = mockups
-      .map((m) => m.imageUrl || m.image || m.url)
-      .filter(Boolean);
+  const mergeMockupsForProduct = (currentMockups = [], incomingMockups = []) => {
+    const merged = new Map();
 
-    setMockupRecords(mockups);
+    [...currentMockups, ...incomingMockups].forEach((mockup) => {
+      const mockupProductId = String(
+        mockup?.productId ||
+        mockup?.product_id ||
+        mockup?.productID ||
+        mockup?.printfulProductId ||
+        ''
+      ).trim();
 
-    if (urls.length > 0) {
-      setImages(urls);
-      setMainImage(urls[0]);
-      return;
-    }
+      const imageUrl = mockup?.imageUrl || mockup?.image || mockup?.url || '';
 
-    if (fallbackImage) {
-      setImages([fallbackImage]);
-      setMainImage(fallbackImage);
-      return;
-    }
+      if (!imageUrl) return;
+      if (!mockupProductId) return;
+      if (mockupProductId !== activeProductId) return;
 
-    setImages([]);
-    setMainImage(null);
+      const key = mockup?.id || imageUrl;
+
+      merged.set(key, {
+        ...mockup,
+        productId: activeProductId,
+        imageUrl,
+      });
+    });
+
+    return Array.from(merged.values()).slice(0, MAX_IMAGES);
   };
+  
+const applyGalleryImages = (mockups = [], fallbackImage = '') => {
+  const safeMockups = mergeMockupsForProduct([], mockups);
+  const urls = safeMockups.map((m) => m.imageUrl).filter(Boolean);
 
-  useEffect(() => {
+  setMockupRecords(safeMockups);
+
+  if (urls.length > 0) {
+    setImages(urls);
+    setMainImage(urls[0]);
+    return;
+  }
+
+  if (fallbackImage) {
+    setImages([fallbackImage]);
+    setMainImage(fallbackImage);
+    return;
+  }
+
+  setImages([]);
+  setMainImage(null);
+};
+
+useEffect(() => {
     if (!product || !activeProductId) return;
 
     const loadMockups = async () => {
@@ -433,19 +462,16 @@ if (!token) {
       if (!res.ok) throw new Error('Upload failed');
 
       const createdMockup = await res.json().catch(() => null);
+      const fetchedMockups = await getMockupsForProduct(activeProductId).catch(() => []);
 
-      let mockups = await getMockupsForProduct(activeProductId);
+      const nextMockups = mergeMockupsForProduct(mockupRecords, [
+        ...fetchedMockups,
+        ...(createdMockup?.imageUrl
+          ? [{ ...createdMockup, productId: activeProductId }]
+          : []),
+      ]);
 
-      if (!mockups.length && createdMockup?.imageUrl) {
-        mockups = [
-          {
-            ...createdMockup,
-            productId: activeProductId,
-          },
-        ];
-      }
-
-      applyGalleryImages(mockups, getProductImage(product));
+      applyGalleryImages(nextMockups, getProductImage(product));
 
       toast.success('Image uploaded successfully');
     } catch (err) {
@@ -721,19 +747,16 @@ if (!token) {
       if (!res.ok) throw new Error('Upload failed');
 
       const createdMockup = await res.json().catch(() => null);
+      const fetchedMockups = await getMockupsForProduct(activeProductId).catch(() => []);
 
-      let mockups = await getMockupsForProduct(activeProductId);
+      const nextMockups = mergeMockupsForProduct(mockupRecords, [
+        ...fetchedMockups,
+        ...(createdMockup?.imageUrl
+          ? [{ ...createdMockup, productId: activeProductId }]
+          : []),
+      ]);
 
-      if (!mockups.length && createdMockup?.imageUrl) {
-        mockups = [
-          {
-            ...createdMockup,
-            productId: activeProductId,
-          },
-        ];
-      }
-
-      applyGalleryImages(mockups, getProductImage(product));
+      applyGalleryImages(nextMockups, getProductImage(product));
 
       toast.success('Image uploaded successfully');
     } catch (err) {

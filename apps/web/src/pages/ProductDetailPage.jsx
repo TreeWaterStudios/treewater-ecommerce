@@ -232,15 +232,23 @@ export default function ProductDetailPage() {
   const [mainImage, setMainImage] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
+  const activeProductId = String(
+    productId ||
+    product?.productId ||
+    product?.id ||
+    ''
+  ).trim();
+
   useEffect(() => {
-    const currentProductId = product?.productId || product?.id;
-    if (!currentProductId) return;
+    if (!product || !activeProductId) return;
 
     const loadMockups = async () => {
       const printfulImage = getProductImage(product);
 
       try {
-        const mockups = await getMockupsForProduct(currentProductId);
+        console.log('[MOCKUPS] Loading for productId:', activeProductId);
+
+        const mockups = await getMockupsForProduct(activeProductId);
         const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
         setMockupRecords(mockups);
@@ -271,7 +279,7 @@ export default function ProductDetailPage() {
     };
 
     loadMockups();
-  }, [product?.productId, product?.id]);
+  }, [product, activeProductId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -391,7 +399,7 @@ export default function ProductDetailPage() {
     try {
       const labels = imageFiles.map((_, i) => `View ${images.length + i + 1}`);
       const formData = new FormData();
-      formData.append('productId', product.id);
+      formData.append('productId', activeProductId);
       formData.append('file', imageFiles[0]);
       formData.append('label', labels[0] || 'Mockup');
 
@@ -401,7 +409,7 @@ if (!token) {
   throw new Error('No admin token found');
 }
 
-      const res = await fetch(`https://treewater-ecommerce.onrender.com/products/${productId}/mockups`, {
+      const res = await fetch(`https://treewater-ecommerce.onrender.com/products/${activeProductId}/mockups`, {
       method: 'POST',
       headers: {
       Authorization: `Bearer ${token}`,
@@ -411,7 +419,7 @@ if (!token) {
 
       if (!res.ok) throw new Error('Upload failed');
 
-      const mockups = await getMockupsForProduct(product.id);
+      const mockups = await getMockupsForProduct(activeProductId);
       const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
       setMockupRecords(mockups);
@@ -675,7 +683,7 @@ if (!token) {
     try {
       const labels = imageFiles.map((_, i) => `View ${images.length + i + 1}`);
       const formData = new FormData();
-      formData.append('productId', product.id);
+      formData.append('productId', activeProductId);
       formData.append('file', imageFiles[0]);
       formData.append('label', labels[0] || 'Mockup');
 
@@ -685,7 +693,7 @@ if (!token) {
       throw new Error('No admin token found');
       }
 
-      const res = await fetch(`https://treewater-ecommerce.onrender.com/products/${productId}/mockups`, {
+      const res = await fetch(`https://treewater-ecommerce.onrender.com/products/${activeProductId}/mockups`, {
       method: 'POST',
       headers: {
       Authorization: `Bearer ${token}`,
@@ -694,7 +702,7 @@ if (!token) {
   });
       if (!res.ok) throw new Error('Upload failed');
 
-      const mockups = await getMockupsForProduct(product.id);
+      const mockups = await getMockupsForProduct(activeProductId);
       const urls = mockups.map((m) => m.imageUrl || m.image).filter(Boolean);
 
       setMockupRecords(mockups);

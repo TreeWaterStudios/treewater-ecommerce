@@ -1,65 +1,70 @@
-import { getAdminToken } from '@/api/adminApi.js';
+const API_BASE = 'https://treewater-ecommerce.onrender.com';
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'https://treewater-ecommerce.onrender.com';
+const cleanProductId = (productId) => {
+  const id = String(productId || '').trim();
 
-export async function getMockupsForProduct(productId) {
-  const response = await fetch(`${API_BASE}/products/${productId}/mockups`, {
-    cache: 'no-store',
-  });
+  if (!id || id === 'undefined' || id === 'null' || id.startsWith('fallback')) {
+    throw new Error(`Invalid mockup productId: ${id}`);
+  }
 
-  const data = await response.json().catch(() => []);
+  return id;
+};
+
+export const getMockupsForProduct = async (productId) => {
+  const safeProductId = cleanProductId(productId);
+
+  const response = await fetch(
+    `${API_BASE}/products/${encodeURIComponent(safeProductId)}/mockups`,
+    { cache: 'no-store' }
+  );
 
   if (!response.ok) {
-    throw new Error(data.error || 'Failed to fetch mockups');
+    throw new Error('Failed to fetch product mockups');
   }
 
-  const mockups = Array.isArray(data) ? data : [];
+  return response.json();
+};
 
-  return mockups.map((m) => ({
-    ...m,
-    imageUrl: m.imageUrl || m.image || m.url || '',
-  }));
-}
-
-export async function uploadMockup(productId, file, label = '') {
-  const token = getAdminToken();
-
-  if (!token) {
-    throw new Error('Admin login required');
-  }
+export const uploadMockupForProduct = async (productId, file, label = '') => {
+  const safeProductId = cleanProductId(productId);
 
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('mockup', file);
   formData.append('label', label);
 
-  const response = await fetch(`${API_BASE}/products/${productId}/mockups`, {
-    method: 'POST',
+  const token = localStorage.getItem('adminToken');
+
+  const response = await fetch(
+    `${API_BASE}/products/${encodeURIComponent(safeProductId)}/mockups`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to upload product mockup');
+  }
+
+  return response.json();
+};
+
+export const deleteMockup = async (mockupId) => {
+  const token = localStorage.getItem('adminToken');
+
+  const response = await fetch(`${API_BASE}/mockups/${mockupId}`, {
+    method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    body: formData,
   });
 
-  const data = await response.json().catch(() => ({}));
-
   if (!response.ok) {
-    throw new Error(data.error || data.details || `Upload failed with status ${response.status}`);
+    throw new Error('Failed to delete mockup');
   }
 
-  return {
-    ...data,
-    imageUrl: data.imageUrl || data.image || data.url || '',
-  };
-}
-
-export async function uploadMockups(productId, files, labels = []) {
-  const uploaded = [];
-
-  for (let i = 0; i < files.length; i++) {
-    const result = await uploadMockup(productId, files[i], labels[i] || '');
-    uploaded.push(result);
-  }
-
-  return uploaded;
-}
+  return response.json();
+};

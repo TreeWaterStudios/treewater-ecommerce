@@ -51,7 +51,7 @@ const HomePage = () => {
             ></div>
 
             <video
-              className="pointer-events-none absolute inset-0 h-full w-full object-contain object-center motion-reduce:hidden"
+              className="pointer-events-none absolute inset-x-0 top-[18%] h-[58%] w-full object-cover object-center motion-reduce:hidden md:inset-0 md:h-full md:w-full md:object-cover md:object-center"
               autoPlay
               muted
               loop

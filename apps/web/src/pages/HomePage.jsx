@@ -134,7 +134,7 @@ const HomePage = () => {
                 Featured Beats
               </h2>
 
-              <Card className="bg-card/45 md:bg-card/90 backdrop-blur-md border-primary/30 neon-border p-8 md:p-10 max-w-3xl mx-auto">
+              <Card className="bg-card/80 backdrop-blur-md border-primary/30 neon-border p-8 md:p-10 max-w-3xl mx-auto">
                 <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border border-primary/40 mx-auto mb-6">
                   <Play className="w-10 h-10 text-primary" />
                 </div>

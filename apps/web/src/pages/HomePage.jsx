@@ -39,15 +39,36 @@ const HomePage = () => {
         <Header />
 
         <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden">
-          <div
-            className="absolute inset-0 bg-contain bg-center bg-no-repeat md:bg-contain md:bg-center md:bg-fixed"
-            style={{
-              backgroundImage: 'url(https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/40253a724b9b6ff595bd07dd6d28aa8a.jpg)',
-              backgroundColor: '#020607',
-            }}
-          >
+          <div className="absolute inset-0" style={{ backgroundColor: '#020607' }}>
+            {/* Existing still image remains behind the video as the loading,
+                playback-error, and reduced-motion fallback. */}
+            <div
+              className="absolute inset-0 bg-contain bg-center bg-no-repeat md:bg-contain md:bg-center md:bg-fixed"
+              style={{
+                backgroundImage: 'url(https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/40253a724b9b6ff595bd07dd6d28aa8a.jpg)',
+                backgroundColor: '#020607',
+              }}
+            ></div>
+
+            <video
+              className="pointer-events-none absolute inset-0 h-full w-full object-contain object-center motion-reduce:hidden"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster="https://horizons-cdn.hostinger.com/e695e0dc-f8a7-43fd-a469-aa5a530eb903/40253a724b9b6ff595bd07dd6d28aa8a.jpg"
+              aria-hidden="true"
+            >
+              <source
+                src="https://res.cloudinary.com/dbkhaifkf/video/upload/f_mp4/treewater-home-loop-web_hcg1jz.mp4"
+                type="video/mp4"
+              />
+            </video>
+
             {/* Dark semi-transparent overlay for text readability */}
             <div className="absolute inset-0 bg-black/50"></div>
+
             {/* Gradient to blend smoothly into the next section */}
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent"></div>
           </div>

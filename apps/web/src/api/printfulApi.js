@@ -4,8 +4,8 @@ export const fetchProducts = async () => {
   try {
     console.log('Fetching products from: /printful/products');
     const response = await apiServerClient.fetch(`/printful/products?t=${Date.now()}`, {
-  cache: 'no-store',
-});
+      cache: 'no-store',
+    });
     console.log(`Response status: ${response.status}`);
     
     if (!response.ok) {
@@ -17,19 +17,27 @@ export const fetchProducts = async () => {
     // Return the full JSON response so the component can log it and extract the products array
     return json;
   } catch (error) {
-    console.error(`Error fetching products: ${error.message}`);
-    return { products: [], error: error.message }; // Return safe fallback
+    console.error('Printful API Error (fetchProducts):', error);
+    throw error;
   }
 };
 
-export const fetchProduct = async (id) => {
+export const fetchProduct = async id => {
   try {
-    const response = await apiServerClient.fetch(`/printful/products/${id}`);
+    const response = await apiServerClient.fetch(
+      `/printful/products/${encodeURIComponent(id)}`
+    );
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to fetch product details');
+
+      throw new Error(
+        errorData.error || 'Failed to fetch product details'
+      );
     }
+
     const json = await response.json();
+
     return json.data || json.product || json;
   } catch (error) {
     console.error(`Printful API Error (fetchProduct ${id}):`, error);

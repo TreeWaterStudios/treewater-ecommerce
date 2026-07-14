@@ -3,7 +3,8 @@ import { Helmet } from 'react-helmet';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
 
-const BEATSTARS_PLAYER_URL = 'https://player.beatstars.com/?storeId=152401';
+const BEATSTARS_PLAYER_URL =
+  'https://player.beatstars.com/?storeId=152401&v=20260714';
 
 const BeatLeasingPage = () => {
   return (
@@ -69,7 +70,7 @@ const BeatLeasingPage = () => {
                   height="800"
                   className="block w-full h-[720px] sm:h-[760px] lg:h-[800px]"
                   allow="autoplay; encrypted-media"
-                  loading="lazy"
+                  loading="eager"
                 />
               </div>
             </section>

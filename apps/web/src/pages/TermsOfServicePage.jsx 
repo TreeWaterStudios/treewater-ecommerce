@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
 
+// Approved TREEWATER STUDIOS terms of service page.
 const TermsOfServicePage = () => {
   return (
     <>

@@ -1,37 +1,18 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '@/components/Header.jsx';
 import Footer from '@/components/Footer.jsx';
 
-/*
- * IMPORTANT:
- * Compare this with the exact unique URL shown in:
- * BeatStars Studio → Features → Players → Embedding options
- *
- * If BeatStars gives you a different URL, paste that exact URL here.
- */
 const BEATSTARS_PLAYER_BASE_URL =
   'https://player.beatstars.com/?storeId=152401';
 
 const BeatLeasingPage = () => {
-  /*
-   * Creates a fresh player request whenever this page mounts.
-   * It also lets visitors manually reload the player without
-   * refreshing the entire TreeWater Studios website.
-   */
-  const [playerRefreshToken, setPlayerRefreshToken] = useState(() =>
-    Date.now()
-  );
-
+  // Generates a fresh iframe URL whenever this page loads.
   const beatStarsPlayerUrl = useMemo(() => {
     const separator = BEATSTARS_PLAYER_BASE_URL.includes('?') ? '&' : '?';
 
-    return `${BEATSTARS_PLAYER_BASE_URL}${separator}twRefresh=${playerRefreshToken}`;
-  }, [playerRefreshToken]);
-
-  const refreshBeatStarsPlayer = () => {
-    setPlayerRefreshToken(Date.now());
-  };
+    return `${BEATSTARS_PLAYER_BASE_URL}${separator}twRefresh=${Date.now()}`;
+  }, []);
 
   return (
     <>
@@ -87,29 +68,19 @@ const BeatLeasingPage = () => {
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    type="button"
-                    onClick={refreshBeatStarsPlayer}
-                    className="inline-flex items-center justify-center rounded-md border border-primary/50 bg-black/40 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-primary/10 hover:border-primary hover:shadow-[0_0_15px_rgba(0,255,255,0.35)]"
-                  >
-                    Reload Updated Beats
-                  </button>
-
-                  <a
-                    href={beatStarsPlayerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:bg-primary/90 hover:shadow-[0_0_15px_rgba(0,255,255,0.6)]"
-                  >
-                    Open BeatStars Player
-                  </a>
-                </div>
+                <a
+                  href={beatStarsPlayerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:bg-primary/90 hover:shadow-[0_0_15px_rgba(0,255,255,0.6)]"
+                >
+                  Open BeatStars Player
+                </a>
               </div>
 
               <div className="w-full overflow-hidden rounded-xl border border-white/10 bg-black/70">
                 <iframe
-                  key={playerRefreshToken}
+                  key={beatStarsPlayerUrl}
                   title="TreeWater Studios BeatStars Blaze Player"
                   src={beatStarsPlayerUrl}
                   width="100%"

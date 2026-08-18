@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import apiServerClient from '@/lib/apiServerClient';
+const API_BASE = 'https://treewater-ecommerce.onrender.com';
 
 const SyncButton = ({ onSyncComplete }) => {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -11,7 +11,7 @@ const SyncButton = ({ onSyncComplete }) => {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      const response = await apiServerClient.fetch('/printful/sync-products', {
+      const response = await fetch(`${API_BASE}/printful/sync-products`, {
         method: 'POST'
       });
       

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, PackageX, AlertCircle, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import apiServerClient from '@/lib/apiServerClient.js';
+const API_BASE = 'https://treewater-ecommerce.onrender.com';
 
 const ProductCard = ({ product, index }) => {
   const navigate = useNavigate();
@@ -99,7 +99,7 @@ const ProductsList = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiServerClient.fetch('/printful/products');
+      const response = await fetch(`${API_BASE}/printful/products`);
       if (!response.ok) {
         throw new Error('Failed to fetch products from server');
       }

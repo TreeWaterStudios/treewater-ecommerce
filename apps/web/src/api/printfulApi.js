@@ -1,9 +1,9 @@
-import apiServerClient from '@/lib/apiServerClient.js';
+const API_BASE = 'https://treewater-ecommerce.onrender.com';
 
 export const fetchProducts = async () => {
   try {
     console.log('Fetching products from: /printful/products');
-    const response = await apiServerClient.fetch(`/printful/products?t=${Date.now()}`, {
+    const response = await fetch(`${API_BASE}/printful/products?t=${Date.now()}`, {
       cache: 'no-store',
     });
     console.log(`Response status: ${response.status}`);
@@ -24,8 +24,8 @@ export const fetchProducts = async () => {
 
 export const fetchProduct = async id => {
   try {
-    const response = await apiServerClient.fetch(
-      `/printful/products/${encodeURIComponent(id)}`
+    const response = await fetch(
+      `${API_BASE}/printful/products/${encodeURIComponent(id)}`
     );
 
     if (!response.ok) {
@@ -47,7 +47,7 @@ export const fetchProduct = async id => {
 
 export const fetchShippingRates = async (recipient, items) => {
   try {
-    const response = await apiServerClient.fetch('/printful/shipping-rates', {
+    const response = await fetch(`${API_BASE}/printful/shipping-rates`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ recipient, items })
@@ -65,7 +65,7 @@ export const fetchShippingRates = async (recipient, items) => {
 
 export const createOrder = async (orderData) => {
   try {
-    const response = await apiServerClient.fetch('/printful/orders', {
+    const response = await fetch(`${API_BASE}/printful/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData)

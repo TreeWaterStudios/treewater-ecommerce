@@ -10,8 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import pb from '@/lib/pocketbaseClient';
-import apiServerClient from '@/lib/apiServerClient';
+
 import SyncButton from '@/components/SyncButton.jsx';
+
+const API_BASE = 'https://treewater-ecommerce.onrender.com';
 
 const AdminMerchandiseManager = () => {
   const [availableProducts, setAvailableProducts] = useState([]);
@@ -25,7 +27,7 @@ const AdminMerchandiseManager = () => {
   const fetchAvailableProducts = async () => {
     try {
       setLoadingAvailable(true);
-      const response = await apiServerClient.fetch('/printful/products');
+      const response = await fetch(`${API_BASE}/printful/products`);
       if (!response.ok) throw new Error('Failed to fetch Printful products');
       const data = await response.json();
       setAvailableProducts(data || []);
